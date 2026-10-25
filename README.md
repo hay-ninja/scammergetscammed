@@ -1,98 +1,145 @@
 # ScammersGetScammed
 
-**A bank fraud-ops tool that turns scam calls into blocked mule accounts.**
+**An AI decoy grandma answers scam calls, gets the scammer to read out his "safe account", and the bank stops
+that account before any real customer's money reaches it.**
 
-Phantom-hacker scams have taken over $1B from seniors, and every one ends the same way: *"move your money to a safe account."* Margaret is an AI decoy grandma who answers scam calls for a bank, CalHacks Federal Credit Union (fictional). She plays along until the scammer reads out their "safe account." Within seconds that account is blocklisted, pending transfers to it are held, and past victims are found for recovery.
+Live: **https://scammergetscammed.biz** · Call Margaret: **(832) 934-9457** · Solo build, Cal Hacks 13.0
 
-**The AI that talks can't block anyone.** Blocking needs three things to agree: a separately trained scam-stage classifier, fixed rules (scam sequence, routing checksum, allowlist), and, for freezes, a human analyst.
+Americans over 60 lost **$4.9 billion** to fraud in 2024 (FBI IC3). The phantom hacker scam always ends the same
+way: *"move your money to a safe account."* The victim sends the money themselves, so the bank sees a normal
+payment. But the scammer has to say **where** the money goes. We make him say it to us.
 
-## How it works
+**Seats it fills:** Fraud Intelligence Analyst + Payments Controls Officer for CalHacks Federal Credit Union
+(a fictional bank).
+
+---
+
+## How it works (one call, end to end)
 
 ```
-Phone call (Twilio) → Pipecat: Cartesia speech-to-text → Gemini (Margaret) → Cartesia voice
-                         │ each caller line
-                         ▼
-               MargaretSGS: trained classifier + number extractor + gate
-                         │ when the gate passes
-                         ▼
-               Bank controls: blocklist · hold pending wires · 30-day lookback · SAR draft · analyst approval
-                         │
-                         ▼
-               Live dashboard (React) on the projector
+Scammer's phone ─▶ Twilio ─▶ Pipecat ─▶ Cartesia speech-to-text ─▶ caller line
+                                                                     │
+        Margaret (Gemini, StepFun backup) ◀── coaching note ── MargaretSGS: our fine-tuned model
+        │                                                        labels the scam stage, pulls out
+        ▼                                                        numbers, runs 5 checks
+   Cartesia Sonic voice ─▶ back to the phone                         │ all 5 pass
+                                                                     ▼
+                      CalHacks Federal (ledger in Capital One Nessie): flag the account,
+                      hold pending wires to it, recall the last 30 days, audit log
+                                                                     │
+                      MargaretSGS Investigator (CREAO agent): reads the full Nessie ledger,
+                      finds the ring behind the account, drafts the SAR
+                                                                     │
+                                         Human analyst approves blocks and freezes
 ```
+
+**The AI that talks can't flag anyone.** Margaret (the LLM) has no tools. An account is flagged only if all five
+checks pass: a pressure tactic was heard · a "safe account" was asked for first · scam score ≥ 0.90 · the
+routing number passes the ABA checksum · it's not on the allowlist. Freezes need a human.
+
+## MargaretSGS: the model behind Margaret
+
+- **Data:** 2,952 synthetic calls written by Claude (~$31 of credits), every caller line labelled with its scam
+  stage, in phone speech-to-text style. Includes hard negatives: real bank alerts, charities, title companies and
+  family members reading out real account numbers.
+- **Model:** `answerdotai/ModernBERT-base`, fine-tuned on a **Vultr NVIDIA A16** GPU (3 epochs, 13,701 training
+  windows of "this line + the two before it", class weights), exported to int8 ONNX to run on a laptop CPU.
+- **10 labels:** intro, authority, fear & urgency, secrecy, remote access, safe-account request, account details,
+  small talk, legitimate business, sales.
+- **What it does live:** labels every caller line, turns the stage into a private coaching note for Margaret
+  (what to ask next), and feeds the 5-check gate.
+
+## Proof (what's real, what's simulated, how we know)
+
+| Test | Result | Source |
+|---|---|---|
+| Stage accuracy, test split | 88.5% (macro F1 0.89) | `training/models/finetuned_metrics.json` |
+| 200 held-out calls, written separately in a messier style | macro F1 0.80 | same |
+| False flags on legitimate calls | **0 of 1,173** | `training/models/gate_tuning.json` |
+| Held-out scam calls caught | **16 of 17** | same |
+| Red team: Claude-played scammers (prompt injection, "are you a bot?", data grabs) | 0 leaks, 0 AI reveals, 100% in character, 0 false flags on 26 real callers | `training/models/bench_margaret.json` |
+| Real phone calls replayed as regression tests (incl. a misheard digit that must not be flagged) | all pass | `scripts/replay_call.py` |
+
+| Real | Simulated |
+|---|---|
+| The phone call, speech recognition, Margaret's voice and replies | CalHacks Federal and its members (synthetic, hosted in Capital One's Nessie) |
+| The trained model and its held-out tests | The scammer (a judge with a script) |
+| Number extraction, checksum, 5-check gate, holds, recalls, audit log | Training calls (synthetic, modelled on FBI/FTC scam descriptions) |
+| CREAO investigations over the Nessie ledger | Notifying the receiving bank |
+
+## CREAO: MargaretSGS Investigator
+
+- **Agent ID:** `5c773c9c-10be-44d7-b636-3bfa5c6829c4`
+- **Agent share link:** https://agent.creao.ai/install/5c773c9c-10be-44d7-b636-3bfa5c6829c4?version=7241417b-b073-432d-bca7-eefbf2552e0e
+- **Latest run:** `e696c8f0-b4ef-4217-b589-1a920e789fa6` (5 linked mule accounts, $100,850 exposed)
+- When an account is flagged, our backend starts the agent via the **API Trigger** with the case: flagged accounts,
+  the transcript with stages, the caller's claims, and the holds and recalls already made (`server/creao.py`).
+- The agent reads the bank's full ledger from **Nessie**, follows the money, and returns a case file plus
+  structured findings: linked mule accounts, more victims, members at risk, legitimate lookalikes it cleared,
+  totals, a SAR draft and receiving-bank notices.
+- Runs take minutes, so they're async: we poll (and accept webhooks), show progress in the console, and keep the
+  last completed run on screen. **The agent only proposes**; each finding has an Approve button, and approval runs
+  the bank's normal controls (holds, recalls, notices).
+- Without the agent, the bank knows about one account. The agent is what finds the ring.
+
+## Capital One Nessie: the bank's core ledger
+
+- 295 members, 447 checking and savings accounts, ~10,700 transactions over 90 days (payroll, Social Security,
+  bills, card spend, member transfers, scam wires), plus a hidden mule ring and legitimate lookalikes.
+- `scripts/seed_nessie.py` loads it; `python -m server.bank.nessie` snapshots it; the console's ledger is rebuilt
+  from that snapshot on every reset.
+- **Write-back:** flagged or frozen CalHacks Federal accounts are marked `HELD_REVIEW` / `FROZEN` in Nessie
+  (`PUT /accounts/{id}`). Payment holds are kept on our side because Nessie doesn't allow editing withdrawals.
+
+## Cartesia features used
+
+- **Cartesia speech-to-text** for the caller, streamed over an 8 kHz phone line.
+- **Cartesia Sonic** text-to-speech for Margaret, a stock elderly voice (no cloning), with markdown stripped so
+  digits are read cleanly.
+- Natural turn-taking through Pipecat: Smart Turn end-of-turn detection, interruptions by real words only, and
+  Margaret reads every number back digit by digit before it counts.
+
+## Integration (how a bank plugs it in)
+
+- `POST /api/v1/calls`, `POST /api/v1/calls/{id}/lines`, `POST /api/v1/calls/{id}/end`: stream caller lines from
+  the bank's own call platform and get the stage, score and coaching back.
+- `GET /api/v1/blocklist`: screen payments against flagged accounts.
+- Webhook `mule_account.blocked` with the accounts, gate checks, holds and recalls (`WEBHOOK_URL`).
+- Keys stay server-side (`SGS_API_KEY`); nothing secret is in this repo.
 
 ## Run it
 
 ```bash
 py -3.13 -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
-cd web && npm install && cd ..
-cp .env.example .env   # fill in keys
-.venv/Scripts/python -m uvicorn server.main:app --port 8000   # dashboard + bank + MargaretSGS
-npm --prefix web run dev                                       # dashboard UI on :5173
-.venv/Scripts/python scripts/sim_call.py                       # play a scripted call, no phone needed
+npm --prefix web install && npm --prefix web run build
+cp .env.example .env                                          # Twilio, Cartesia, Gemini, Anthropic, CREAO, Nessie keys
+.venv/Scripts/python -m uvicorn server.main:app --port 8000   # site, bank console, MargaretSGS
+PYTHONUTF8=1 .venv/Scripts/python server/voice_bot.py -t twilio -x <public-domain>   # Margaret on the phone
+.venv/Scripts/python scripts/sim_call.py scripts/judge_script.json                  # no phone? scripted call
+.venv/Scripts/python scripts/replay_call.py                                         # regression tests
 ```
 
-Phone mode: see `server/voice_bot.py`.
+Pages: `/#/` product · `/#/live` Margaret Live · `/#/bank/overview` CalHacks Federal console · `/#/how` architecture.
+Deploy to a Vultr server with Caddy (HTTPS) + systemd: `bash deploy/push.sh`.
 
-## Training
-
-```bash
-.venv/Scripts/python training/gen_data.py --calls 2000 --budget 25              # synthetic calls via Claude
-.venv/Scripts/python training/gen_data.py --set extra --calls 560 --budget 8    # hard negatives + stalling-senior calls
-.venv/Scripts/python training/gen_data.py --set heldout --calls 200 --budget 4 --model claude-sonnet-5-5   # separate test set
-.venv/Scripts/python training/train_baseline.py                                 # TF-IDF + logistic regression
-# On the GPU box: train_transformer.py, then export_onnx.py; copy training/models/finetuned_onnx back.
-```
-
-The server loads the best model it finds: `training/models/finetuned_onnx/` (fine-tuned ModernBERT, int8 ONNX, ~80 ms per line on a laptop CPU), else `baseline.joblib`, else keywords. The Model tab shows false-positive blocks on non-scam calls, scam recall, and per-stage F1. The held-out set is written by a different model with a different prompt, so it is a fairer test than the split of the training data.
-
-## Margaret benchmark
-
-```bash
-.venv/Scripts/python scripts/bench_margaret.py --n 40
-```
-
-Claude plays 30 scammers (5 scams × 6 tactics: standard, calm, aggressive, "are you a bot?", prompt injection, data grab) and 10 real callers. Margaret answers with the live prompt, model and coaching notes, MargaretSGS watches every line, and Claude grades each transcript. Reports minutes wasted, accounts extracted and blocked, leaks, character breaks, false blocks and Gemini first-token latency. Uses a scratch copy of `bank.db`.
-
-## CalHacks Federal's core banking runs on Capital One Nessie
-
-The bank's 295 members, 447 checking and savings accounts and ~10,700 transactions (90 days of payroll,
-Social Security, bills, card purchases, member transfers, and the scam wires) live in our Nessie sandbox.
-
-- `scripts/seed_nessie.py` loads the ledger into Nessie, including a hidden mule ring and legitimate lookalikes.
-- `python -m server.bank.nessie` pulls Nessie's customers, accounts, withdrawals and transfers into
-  `server/bank/data/nessie_snapshot.json`. Every demo reset rebuilds the console's ledger from it, so the
-  members, payments, holds and recalls on screen are Nessie's records (and resets stay instant if Nessie is slow).
-- **Write-back:** when MargaretSGS holds or an analyst freezes a CalHacks Federal mule account, the account is
-  flagged `HELD_REVIEW` / `FROZEN` in Nessie (`PUT /accounts/{id}`). Nessie doesn't allow editing withdrawals,
-  so payment holds are recorded on our side. A reset clears the flags.
-- The **MargaretSGS Investigator** (CREAO) reads the same ledger live from Nessie's API to find the ring behind a block.
-
-## What's real and what's simulated
-
-| Real | Simulated |
-|---|---|
-| Phone call, speech recognition, Margaret's voice and replies | CalHacks Federal's members and payments (synthetic, but hosted in Capital One's Nessie API) |
-| Trained classifier and its held-out evaluation | The scammer (a judge with a script card) |
-| Number extraction, routing checksum, gate, holds, lookback, audit log | Training calls (synthetic, modeled on FBI/FTC scam patterns) |
-| | Notifying the receiving bank |
-
-## Cartesia features used
-
-- Sonic text-to-speech for Margaret's voice over a live phone line
-- Cartesia speech-to-text for the caller
+Training: `training/gen_data.py` (Claude data) → `training/train_transformer.py` (GPU) → `training/export_onnx.py`
+→ `training/tune_gate.py`. Benchmark: `scripts/bench_margaret.py`.
 
 ## Responsible use
 
-- No audio is recorded or stored. Transcripts live in memory for the live session only.
+- No audio is recorded or stored. Transcripts live in memory for the call only.
 - Margaret never shares real personal data and never moves money.
 - Stock voice, no voice cloning.
-- Holds are reversible. Every freeze needs a human analyst, and owners of accounts that may be unwitting mules get review, not seizure.
-- Non-scam callers are recognized, and Margaret ends the call politely.
+- Holds are reversible. Every freeze needs a human, and owners of possibly unwitting mule accounts get review,
+  not seizure.
+- Legitimate callers are recognised and Margaret ends the call politely.
 
 ## Known limitations
 
-- Speech-to-text can mishear digits. Margaret reads every number back to confirm it.
-- One call at a time.
-- Routing numbers use the unassigned 5x prefix so they can never match a real bank.
+- One call at a time, on one server. Not yet highly available.
+- Phone speech-to-text mishears digits; Margaret reads numbers back, and a misheard routing number fails the
+  checksum and is never flagged.
+- The model is trained and tested on synthetic calls; real bank call data would be the next step.
+- A full CREAO investigation takes minutes, so the console shows the latest completed run while a new one runs.
+- Routing numbers use the unassigned 5x prefix, so they can never match a real bank.
