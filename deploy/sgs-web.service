@@ -1,0 +1,14 @@
+[Unit]
+Description=ScammersGetScammed dashboard, bank console and MargaretSGS
+After=network-online.target
+
+[Service]
+WorkingDirectory=/opt/scammergetscammed
+EnvironmentFile=/opt/scammergetscammed/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/scammergetscammed/.venv/bin/python -m uvicorn server.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

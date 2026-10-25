@@ -1,0 +1,14 @@
+[Unit]
+Description=ScammersGetScammed voice bot (Margaret on the phone via Twilio + Pipecat)
+After=sgs-server.service
+Wants=sgs-server.service
+
+[Service]
+WorkingDirectory=/opt/sgs
+Environment=PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
+ExecStart=/opt/sgs/.venv/bin/python server/voice_bot.py -t twilio -x scammergetscammed.biz
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

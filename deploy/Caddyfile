@@ -1,0 +1,22 @@
+# scammergetscammed.biz: Caddy gets the HTTPS certificate and routes three things.
+#   POST /twilio  -> voice bot (Twilio's call webhook; answers with <Connect><Stream url="wss://.../ws">)
+#   /ws           -> voice bot (Twilio's audio stream)
+#   everything else (site, console, /api, /ws/dashboard) -> FastAPI server
+scammergetscammed.biz, www.scammergetscammed.biz {
+	encode gzip
+
+	@twilio path /twilio /twilio/
+	handle @twilio {
+		rewrite * /
+		reverse_proxy 127.0.0.1:7860
+	}
+
+	@voicews path /ws
+	handle @voicews {
+		reverse_proxy 127.0.0.1:7860
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8000
+	}
+}

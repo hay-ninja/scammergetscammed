@@ -1,0 +1,14 @@
+[Unit]
+Description=ScammersGetScammed server (site, bank console, MargaretSGS, API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/sgs
+Environment=PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
+ExecStart=/opt/sgs/.venv/bin/python -m uvicorn server.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
