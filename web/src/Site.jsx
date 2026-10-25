@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { SCRIPTS } from "./scripts.js";
 
-// The vendor side: Scammer Gets Scammed sells a decoy line + ScamWatch to banks.
+// The vendor side: ScammersGetScammed sells a decoy line + MargaretSGS to banks.
 // CalHacks Federal Credit Union (the Fraud Ops console at #/bank, the decoy call at #/live) is the fictional bank customer.
 // Visual language: white paper + warm orange accents (Giga-inspired, light), Instrument Sans 500 headlines,
 // Geist Mono micro-labels with an orange square bullet, one black pill per screen. No grid backgrounds.
@@ -54,7 +54,7 @@ export function SiteNav({ route }) {
       <style>{STYLE}</style>
       <div className="max-w-6xl mx-auto px-6 h-[66px] grid grid-cols-[1fr_auto_1fr] items-center">
         <a href="#/" className="flex items-center gap-2 text-[17px] font-medium tracking-title text-fl-ink">
-          <span className="h-[7px] w-[7px] bg-wm-500" />Scammer Gets Scammed
+          <span className="h-[7px] w-[7px] bg-wm-500" />ScammersGetScammed
         </a>
         <div className="flex items-center gap-8">
           {links.map(([href, label]) => (
@@ -302,10 +302,10 @@ const DO_STEPS = [
         <div className="rounded-xl bg-fl-ink text-white px-3 py-2 w-fit max-w-[85%] ml-auto">Could you read the numbers very slowly, dear?</div>
       </MockCard>
     ) },
-  { t: "ScamWatch listens", tag: "classifier", d: "Our fine-tuned model labels every caller line (authority, fear, secrecy, safe-account ask) in ~80 ms.",
+  { t: "MargaretSGS listens", tag: "classifier", d: "Our fine-tuned model labels every caller line (authority, fear, secrecy, safe-account ask) in ~80 ms.",
     mock: (
       <MockCard>
-        <div className="flex items-center justify-between"><Micro dot="bg-wm-500">scamwatch · modernbert int8</Micro><span className="font-fmono text-[11px] text-fl-mute">~80 ms</span></div>
+        <div className="flex items-center justify-between"><Micro dot="bg-wm-500">margaretsgs · modernbert int8</Micro><span className="font-fmono text-[11px] text-fl-mute">~80 ms</span></div>
         <div className="text-[13px] text-fl-body mt-3 italic">“wire your savings to the protected federal reserve account”</div>
         <div className="flex items-end justify-between mt-4">
           <div><div className="font-fmono text-[11px] text-fl-mute">stage</div><div className="text-[20px] font-medium tracking-title">safe_account_request</div></div>
@@ -361,7 +361,7 @@ const HIRE_STEPS = [
       <MockCard>
         <Micro dot="bg-wm-500">audit log</Micro>
         <div className="mt-3 font-fmono text-[12px]">
-          {[["14:02:11", "gate.pass", "scamwatch v3 · 0.97"], ["14:02:11", "blocklist.add", "572109086 / 44102287"], ["14:02:12", "wire.hold", "$8,500"], ["14:02:12", "recall.request", "$41,000"], ["14:02:13", "sar.draft", "case 1042"]].map(([a, b, c]) => (
+          {[["14:02:11", "gate.pass", "margaretsgs v3 · 0.97"], ["14:02:11", "blocklist.add", "572109086 / 44102287"], ["14:02:12", "wire.hold", "$8,500"], ["14:02:12", "recall.request", "$41,000"], ["14:02:13", "sar.draft", "case 1042"]].map(([a, b, c]) => (
             <div key={b} className="grid grid-cols-[70px_110px_1fr] gap-2 py-2 border-t border-fl-soft"><span className="text-fl-mute">{a}</span><span className="text-wm-700">{b}</span><span className="text-fl-body truncate">{c}</span></div>
           ))}
         </div>
@@ -514,7 +514,7 @@ export function Landing() {
       <Section label="the stack" title="Built with.">
         <div className="grid grid-cols-4 gap-x-6">
           {[["Cartesia", "Margaret's voice (Sonic TTS) and the caller's speech-to-text"], ["Google Gemini", "Margaret's brain: what she says next"],
-            ["StepFun", "Automatic failover brain if Gemini rate-limits mid-call"], ["Vultr", "GPU fine-tuning of ScamWatch, and hosting"],
+            ["StepFun", "Automatic failover brain if Gemini rate-limits mid-call"], ["Vultr", "GPU fine-tuning of MargaretSGS, and hosting"],
             ["Anthropic Claude", "Synthetic training calls, red-team scammers and the benchmark judge"], ["Twilio", "The phone number and media stream"],
             ["Pipecat", "Real-time voice pipeline"], ["ModernBERT + ONNX", "Our scam-stage classifier, int8 on CPU"]].map(([t, d]) => (
             <div key={t} className="border-t border-fl-line py-5 group">
@@ -711,10 +711,10 @@ export function Architecture() {
             </div>
             <div className="absolute right-[-64px] left-[55%] top-1/2 h-[2px] bg-wm-500" />
             <span className="absolute right-[-72px] top-1/2 -translate-y-1/2 text-wm-500 text-[18px]" aria-hidden="true">▶</span>
-            <span className="absolute left-[56%] -top-0.5 font-fmono text-[12px] text-fl-body">text copy → ScamWatch</span>
+            <span className="absolute left-[56%] -top-0.5 font-fmono text-[12px] text-fl-body">text copy → MargaretSGS</span>
           </div>
           <Node power="llm" title="Margaret replies" line="Plays a confused 78-year-old and stalls for time."
-            chips={["Gemini", "StepFun failover", "Pipecat", "coached by ScamWatch"]} />
+            chips={["Gemini", "StepFun failover", "Pipecat", "coached by MargaretSGS"]} />
           <Down />
           <Node power="pipe" title="Margaret's voice" line="Her reply is spoken back down the phone."
             chips={["Cartesia Sonic"]} />
@@ -777,8 +777,8 @@ export function ApiDocs() {
   const code = "bg-fl-ink text-white/90 rounded-[12px] p-4 text-[12.5px] font-fmono overflow-x-auto whitespace-pre leading-relaxed";
   const Head = ({ n, t }) => (<><div className="font-fmono text-[11px] uppercase tracking-[0.12em] text-wm-600">{n}</div><div className="text-[18px] font-medium tracking-title mt-2">{t}</div></>);
   return (
-    <Section label="api & embed" title="Plug ScamWatch into the call stack you already have."
-      sub="Use our decoy line as-is, or stream your own calls to ScamWatch. Every endpoint takes an X-API-Key header.">
+    <Section label="api & embed" title="Plug MargaretSGS into the call stack you already have."
+      sub="Use our decoy line as-is, or stream your own calls to MargaretSGS. Every endpoint takes an X-API-Key header.">
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-6">
           <Head n="01 · stream" t="Start a call, stream caller lines" />
@@ -805,7 +805,7 @@ POST /api/v1/calls/a1b2c3d4/lines
         </Card>
         <Card className="p-6">
           <Head n="04 · embed" t="Embed the console" />
-          <pre className={`${code} mt-3`}>{`<iframe src="https://scammergetscammed.tech/#/bank/overview"
+          <pre className={`${code} mt-3`}>{`<iframe src="https://scammergetscammed.biz/#/bank/overview"
         style="width:100%;height:900px;border:0"></iframe>`}</pre>
           <div className="text-[14px] text-fl-body mt-3">Fraud analysts watch calls live, approve freezes and read the SAR draft inside the bank's own case tool.</div>
         </Card>

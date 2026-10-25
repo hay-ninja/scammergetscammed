@@ -7,7 +7,7 @@ export const SCRIPTS = [
     kind: "scam",
     title: "Free for all",
     persona: "any scammer you like",
-    how: "Nothing here is scripted on our side: Margaret improvises live and ScamWatch judges every line. Run any scam you know. To see a block, ask her to move money somewhere and read out an account.",
+    how: "Nothing here is scripted on our side: Margaret improvises live and MargaretSGS judges every line. Run any scam you know. To see a block, ask her to move money somewhere and read out an account.",
     tactics: ["Whatever you try"],
     beats: [
       "Claim to be someone official, or family in trouble.",

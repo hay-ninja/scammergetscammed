@@ -3,7 +3,7 @@
 You own `web/`. These are the requirements the live demo in `DEMO.md` depends on. Go through every item,
 check it in the browser at `http://127.0.0.1:8000` (not `localhost`), fix what's missing, and reply with a
 pass/fail list. **P0 items first. Feature code stops at 5:30 AM; all code stops at 7:00 AM.**
-Don't change ScamWatch, the gate, `voice_bot.py` or `persona.py`. `scripts/replay_call.py` must still pass and
+Don't change MargaretSGS, the gate, `voice_bot.py` or `persona.py`. `scripts/replay_call.py` must still pass and
 `npm --prefix web run build` must be clean.
 
 Known gaps right now: **L3 (script panel) and B6 (CREAO investigator panel) don't exist yet.**
@@ -65,7 +65,7 @@ Known gaps right now: **L3 (script panel) and B6 (CREAO investigator panel) don'
   - the gate checks with pass/fail and the data behind each ("Why?")
   - the "Sources disagree" box (the memo says Federal Reserve, the routing number says a private bank)
   - holds and recalls, a transcript excerpt, the SAR draft, and the decision history
-- **B6 (P0, missing)** **CREAO Fraud Investigator panel** in the case detail, and as a gadget on the
+- **B6 (P0, missing)** **MargaretSGS Investigator (CREAO) panel** in the case detail, and as a gadget on the
   overview:
   - **"Run investigator"** button, calling `POST /api/creao/run`
   - status: queued → running → done, read from `investigation` in the live state or
@@ -81,11 +81,11 @@ Known gaps right now: **L3 (script panel) and B6 (CREAO investigator panel) don'
 - **B7 (P1)** "Simulate: new wire next week" holds a later wire to an already-blocked mule and cites the
   original case.
 - **B8 (P1)** Blocklist, Payments, Audit log, and Model pages all work. The audit log shows every action with
-  its actor (ScamWatch seat / rules / analyst / CREAO / system).
+  its actor (MargaretSGS seat / rules / analyst / CREAO / system).
 
 ## Site (`#/`, `#/how`, `#/api`)
 - **S1 (P0)** `#/how` (architecture) is presentable on the projector for the tech-stack segment: phone →
-  Twilio → Pipecat (Cartesia STT → Gemini → Cartesia TTS) → ScamWatch (fine-tuned ModernBERT + rules + gate)
+  Twilio → Pipecat (Cartesia STT → Gemini → Cartesia TTS) → MargaretSGS (fine-tuned ModernBERT + rules + gate)
   → bank controls → CREAO investigator → analyst.
 - **S2 (P1)** `#/api` shows the embed story: the `/api/v1` endpoints and the `mule_account.blocked` webhook.
 

@@ -164,7 +164,7 @@ function StageCard({ s }) {
       right={last && <Tag>confidence <b className="text-wm-600 font-medium">{Math.round(last.p_scam * 100)}%</b></Tag>}>
       <div className={`font-medium tracking-title leading-tight text-[clamp(22px,1.75vw,34px)] ${s?.current_stage ? "text-fl-ink" : "text-fl-mute"}`}>
         {s?.current_stage ? STAGE_WORDS[s.current_stage] || s.current_stage : s ? "Listening…" : "Waiting for the caller"}</div>
-      <div className="text-[clamp(13px,0.8vw,15px)] text-fl-body mt-1">ScamWatch classifier, every caller line · <span className="font-fmono">{s?.current_stage || "—"}</span></div>
+      <div className="text-[clamp(13px,0.8vw,15px)] text-fl-body mt-1">MargaretSGS classifier, every caller line · <span className="font-fmono">{s?.current_stage || "—"}</span></div>
     </Card>
   );
 }

@@ -4,7 +4,7 @@ Paste everything below the line into a fresh Claude Code / Devin session opened 
 
 ---
 
-You are helping with a hackathon project in this repo ("Scammer Gets Scammed"). Margaret is an AI decoy
+You are helping with a hackathon project in this repo ("ScammersGetScammed"). Margaret is an AI decoy
 grandma that answers scam calls for a bank. Today her replies come from Gemini (`gemini-3.5-flash-lite`)
 with StepFun (`step-3.7-flash`) as failover, wired in `server/voice_bot.py` via Pipecat (`make_llm()`,
 `LLMSwitcher`). Her persona prompt is `server/persona.py` (`SYSTEM_PROMPT`, `FIRST_LINE`, `coach()`):

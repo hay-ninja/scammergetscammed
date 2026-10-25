@@ -1,7 +1,7 @@
 """Build chat-format training data for a fine-tuned Margaret.
 
 Caller lines come from training/data/calls.jsonl + heldout.jsonl. Each call is replayed through
-ScamWatch's CallSession to get the live coaching strategy per turn, then Claude (acting as Margaret)
+MargaretSGS's CallSession to get the live coaching strategy per turn, then Claude (acting as Margaret)
 writes her reply to every caller line in one request per call.
 
 The 40 held-out calls that scripts/bench_margaret.py --caller replay uses (seed 11) are excluded,

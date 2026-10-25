@@ -1,4 +1,4 @@
-# Scammer Gets Scammed
+# ScammersGetScammed
 
 **A bank fraud-ops tool that turns scam calls into blocked mule accounts.**
 
@@ -12,7 +12,7 @@ Phantom-hacker scams have taken over $1B from seniors, and every one ends the sa
 Phone call (Twilio) → Pipecat: Cartesia speech-to-text → Gemini (Margaret) → Cartesia voice
                          │ each caller line
                          ▼
-               ScamWatch: trained classifier + number extractor + gate
+               MargaretSGS: trained classifier + number extractor + gate
                          │ when the gate passes
                          ▼
                Bank controls: blocklist · hold pending wires · 30-day lookback · SAR draft · analyst approval
@@ -28,7 +28,7 @@ py -3.13 -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
 cd web && npm install && cd ..
 cp .env.example .env   # fill in keys
-.venv/Scripts/python -m uvicorn server.main:app --port 8000   # dashboard + bank + ScamWatch
+.venv/Scripts/python -m uvicorn server.main:app --port 8000   # dashboard + bank + MargaretSGS
 npm --prefix web run dev                                       # dashboard UI on :5173
 .venv/Scripts/python scripts/sim_call.py                       # play a scripted call, no phone needed
 ```
@@ -53,7 +53,7 @@ The server loads the best model it finds: `training/models/finetuned_onnx/` (fin
 .venv/Scripts/python scripts/bench_margaret.py --n 40
 ```
 
-Claude plays 30 scammers (5 scams × 6 tactics: standard, calm, aggressive, "are you a bot?", prompt injection, data grab) and 10 real callers. Margaret answers with the live prompt, model and coaching notes, ScamWatch watches every line, and Claude grades each transcript. Reports minutes wasted, accounts extracted and blocked, leaks, character breaks, false blocks and Gemini first-token latency. Uses a scratch copy of `bank.db`.
+Claude plays 30 scammers (5 scams × 6 tactics: standard, calm, aggressive, "are you a bot?", prompt injection, data grab) and 10 real callers. Margaret answers with the live prompt, model and coaching notes, MargaretSGS watches every line, and Claude grades each transcript. Reports minutes wasted, accounts extracted and blocked, leaks, character breaks, false blocks and Gemini first-token latency. Uses a scratch copy of `bank.db`.
 
 ## What's real and what's simulated
 

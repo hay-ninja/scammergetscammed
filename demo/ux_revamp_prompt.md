@@ -11,7 +11,7 @@ approve, reset, model tab, audit, brain picker). Reuse the logic, replace the la
 Deadline: done and rehearsed by **4:00 AM**. Submission is 8:50 AM.
 
 ## Rules
-- Do not change ScamWatch, the gate, `voice_bot.py` behaviour or the snapshot shape except where listed below.
+- Do not change MargaretSGS, the gate, `voice_bot.py` behaviour or the snapshot shape except where listed below.
 - `scripts/replay_call.py` must still pass, and `scripts/sim_call.py` must still drive both apps.
 - uvicorn serves `web/dist`, so finish with `npm --prefix web run build` and check `http://127.0.0.1:8000`
   (not `localhost`: the browser sends too many cookies there and the server returns 431).
@@ -47,7 +47,7 @@ The judges must believe this is the bank's own internal tool and that our system
    PENDING → HELD with a 1 s red-to-green highlight when the block lands.
 5. "Awaiting your approval" card: the freeze request with **Approve** and **Reject** buttons and the gate's
    reasons (see Hyphenate items below).
-6. Recent activity feed from the audit log: actor icon (ScamWatch seat / rules / analyst / system), action, time.
+6. Recent activity feed from the audit log: actor icon (MargaretSGS seat / rules / analyst / system), action, time.
 
 **Members** (the client table the user asked for)
 - One Jira-style table of every CalHacks Federal member from the seed (~45): member ID, name, age, member since,
@@ -58,7 +58,7 @@ The judges must believe this is the bank's own internal tool and that our system
   member_since and a masked account to the seed if they don't exist. Deterministic, seeded, no real data.
 
 **Cases**: table of cases (one per decoy call): key `FRD-1042`, summary ("Phantom hacker · Federal Reserve
-impostor"), priority, status lozenge, assignee ("ScamWatch seat" until an analyst picks it up), created, time
+impostor"), priority, status lozenge, assignee ("MargaretSGS seat" until an analyst picks it up), created, time
 in status. Case detail page: the accounts and gate checks, holds and recalls, the transcript excerpt, the SAR
 draft (Claude), and the decision history.
 

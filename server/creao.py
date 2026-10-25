@@ -1,6 +1,6 @@
-"""CalHacks Federal Fraud Investigator: the CREAO agent that works every case after the block.
+"""MargaretSGS Investigator: the CREAO agent that works every case after the block.
 
-ScamWatch stops one mule account in seconds. The agent then reads the bank's whole ledger in Nessie,
+MargaretSGS stops one mule account in seconds. The agent then reads the bank's whole ledger in Nessie,
 finds the ring behind that account (linked mules, earlier and pending victims, members at risk,
 lookalikes to clear) and writes the SAR. Runs take minutes, so they start in the background and
 finish by webhook, with polling as the fallback. The agent only proposes; an analyst approves.
@@ -169,7 +169,7 @@ def finish(state: dict, status: str, result: dict, error: str | None = None) -> 
         state["audit"].append(engine.audit("creao", "investigation_failed", {"run_id": inv["run_id"], "error": inv["error"]}))
     else:
         inv.update(status="completed", findings=findings)
-        state["sar"] = {"status": "ready", "markdown": findings["sar_markdown"], "source": "CREAO Fraud Investigator"}
+        state["sar"] = {"status": "ready", "markdown": findings["sar_markdown"], "source": "MargaretSGS Investigator (CREAO)"}
         state["audit"].append(engine.audit("creao", "investigation_completed", {
             "run_id": inv["run_id"], "minutes": round((inv["finished_at"] - inv["started_at"]) / 60, 1),
             "linked_mules": len(findings["linked_mule_accounts"]), "victims": len(findings["additional_victims"]),
@@ -294,7 +294,7 @@ def use_cached(state: dict) -> dict:
     runs[state["call"]["id"]] = state["investigation"] = inv
     if findings.get("sar_markdown"):
         state["sar"] = {"status": "ready", "markdown": findings["sar_markdown"],
-                        "source": "CREAO Fraud Investigator" if real else state["sar"].get("source", "template")}
+                        "source": "MargaretSGS Investigator (CREAO)" if real else state["sar"].get("source", "template")}
     state["audit"].append(engine.audit("creao", "investigation_completed", {
         "run_id": run_id, "linked_mules": len(findings["linked_mule_accounts"]),
         "victims": len(findings["additional_victims"]), "cached": True}))

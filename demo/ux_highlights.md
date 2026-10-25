@@ -94,7 +94,7 @@ The judges must feel they've walked into the bank's own office, not our app.
 
 ### Beat 8, embed and stack (`#/api`, `#/how`)
 - `#/how`: the pipeline left to right, phone → Twilio → Pipecat (Cartesia STT → Gemini → Cartesia voice) →
-  ScamWatch (fine-tuned ModernBERT + rules + gate) → bank controls → CREAO investigator → analyst. **The gate box
+  MargaretSGS (fine-tuned ModernBERT + rules + gate) → bank controls → CREAO investigator → analyst. **The gate box
   is the visual centre**, with "the voice AI has no tools" written next to it. Sponsor logos or names on each box.
 - `#/api`: three endpoints and the webhook payload, large monospace, nothing else above the fold.
 

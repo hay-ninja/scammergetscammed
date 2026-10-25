@@ -16,7 +16,7 @@ from server import config, creao, sar
 from server.bank import engine, ops, seed
 from server.scamwatch import session as sess
 
-app = FastAPI(title="Scammer Gets Scammed")
+app = FastAPI(title="ScammersGetScammed")
 
 
 class Hub:
@@ -92,7 +92,7 @@ class Hub:
         await self.broadcast()
 
     async def investigate(self) -> None:
-        """Hand the case to the CREAO Fraud Investigator (background; finishes by webhook or polling)."""
+        """Hand the case to the MargaretSGS Investigator (CREAO) (background; finishes by webhook or polling)."""
         s = self.session
         if s and creao.enabled() and any(a["status"] == "blocked" for a in s.state["accounts"]):
             await creao.start(s.state, self.broadcast)
@@ -324,7 +324,7 @@ async def sim_end():
     return {"ok": True, "summary": hub.session.state["summary"] if hub.session else None}
 
 
-# ---- CREAO Fraud Investigator: the case work after the block ------------------
+# ---- MargaretSGS Investigator (CREAO): the case work after the block ------------------
 
 @app.post("/api/creao/run")
 async def creao_run():
@@ -405,7 +405,7 @@ def set_settings(body: Settings):
     return settings
 
 
-# ---- public API v1: embed ScamWatch in a bank's own call stack ----------------
+# ---- public API v1: embed MargaretSGS in a bank's own call stack ----------------
 # A bank streams caller lines from its own recorder or contact-center platform and gets back the
 # scam stage, score and coaching; blocks arrive by webhook and in the blocklist feed.
 

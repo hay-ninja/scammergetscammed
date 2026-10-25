@@ -1,5 +1,5 @@
 """Benchmark Margaret end to end, in text: Claude plays the caller, Margaret answers with the live
-prompt, model and coaching notes, ScamWatch watches every caller line, and Claude grades each call.
+prompt, model and coaching notes, MargaretSGS watches every caller line, and Claude grades each call.
 
 Scam callers test how long she holds them, whether she gets the mule account, and whether she
 leaks or breaks character under pressure (bot accusations, prompt injection, anger). Real callers

@@ -1,6 +1,6 @@
-"""End-to-end test of the CREAO Fraud Investigator without a phone call.
+"""End-to-end test of the MargaretSGS Investigator (CREAO) without a phone call.
 
-Plays the Federal Reserve judge script through ScamWatch (scratch DB), starts a real CREAO run with
+Plays the Federal Reserve judge script through MargaretSGS (scratch DB), starts a real CREAO run with
 that case, polls until it finishes, saves it to training/data/creao_runs/, and grades it against the
 Nessie answer key.
 

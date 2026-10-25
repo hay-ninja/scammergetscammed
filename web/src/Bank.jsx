@@ -74,11 +74,11 @@ function Logo() {
 }
 
 const ACTOR = {
-  scamwatch: ["AI", "bg-bf-navy text-white", "ScamWatch seat"],
+  scamwatch: ["AI", "bg-bf-navy text-white", "MargaretSGS seat"],
   rules: ["⚙", "bg-[#DEEBFF] text-bf-blue", "Payment rules"],
   analyst: ["JR", "bg-bf-green text-white", ANALYST],
   system: ["⟳", "bg-bf-line text-bf-sub", "System"],
-  creao: ["CI", "bg-[#EAE6FF] text-[#403294] ring-1 ring-[#C0B6F2]", "CREAO investigator"],
+  creao: ["CI", "bg-[#EAE6FF] text-[#403294] ring-1 ring-[#C0B6F2]", "MargaretSGS Investigator"],
 };
 const gateLabel = (k, data) => k === "scam_score" ? `Scam score ≥ ${threshold(data).toFixed(2)}`
   : k === "pressure_stages" && data?.gate?.min_pressure != null ? `${GATE_LABELS[k]} (≥ ${data.gate.min_pressure})` : GATE_LABELS[k] || k;
@@ -105,7 +105,7 @@ function describe(r) {
     case "webhook_sent": return "Case webhook delivered";
     case "webhook_failed": return "Case webhook failed";
     case "investigation_started": return "Investigator started tracing the mule ring";
-    case "investigation_completed": return `Investigation complete: ${d.linked_mules ?? 0} linked mule account${d.linked_mules === 1 ? "" : "s"}, ${d.victims ?? 0} more victim${d.victims === 1 ? "" : "s"}${d.cached ? " (cached)" : ""}`;
+    case "investigation_completed": return `Investigation complete: ${d.linked_mules ?? 0} linked mule account${d.linked_mules === 1 ? "" : "s"}, ${d.victims ?? 0} more victim${d.victims === 1 ? "" : "s"}${d.cached ? (d.run_id && d.run_id !== "cached" ? ` (from CREAO run ${String(d.run_id).slice(0, 8)})` : " (cached)") : ""}`;
     case "investigation_failed": return `Investigation failed${d.error ? `: ${String(d.error).slice(0, 80)}` : ""}`;
     case "agent_finding_approved": return `Approved investigator finding: blocked ${acct(d.account)}${d.why ? `: ${d.why}` : ""}`;
     default: return r.action.replaceAll("_", " ");
@@ -391,12 +391,27 @@ function Decision({ s, caseKey, detail, toast, compact, data }) {
   );
 }
 
-// ---------- CREAO Fraud Investigator ----------
+// ---------- MargaretSGS Investigator (CREAO) ----------
 
 const STEPS_INV = [["queued", "Queued"], ["running", "Running"], ["completed", "Done"]];
 const mask = (n) => `••${String(n || "").slice(-4)}`;
 
-function InvStepper({ status, elapsed, cached }) {
+// Provenance of findings loaded from a saved run: "CREAO run 375a92a6 · 27 min · full ledger".
+function RunTag({ inv }) {
+  const c = inv?.cached_from;
+  if (!c?.run_id) return <span className="rounded-[3px] bg-bf-line px-1.5 text-[11px] font-semibold text-bf-sub">cached</span>;
+  const when = c.finished_at ? new Date(c.finished_at * 1000).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : null;
+  return (
+    <span title={`Findings from CREAO run ${c.run_id}${when ? `, finished ${when}` : ""}. The demo ledger is reseeded identically, so they describe this same ring.`}
+      className="inline-flex items-center gap-1.5 rounded-[3px] bg-[#EAE6FF] text-[#403294] ring-1 ring-[#C0B6F2] px-1.5 py-[1px] text-[11px] font-semibold whitespace-nowrap">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#6554C0]" />
+      CREAO run <span className="font-mono">{String(c.run_id).slice(0, 8)}</span>
+      {c.minutes != null && <> · {Math.round(c.minutes)} min</>} · full ledger
+    </span>
+  );
+}
+
+function InvStepper({ status, elapsed, cached, inv }) {
   const at = status === "completed" ? 2 : status === "running" ? 1 : status === "queued" ? 0 : -1;
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
@@ -410,7 +425,7 @@ function InvStepper({ status, elapsed, cached }) {
           </span>
         </React.Fragment>
       ))}
-      {cached && status === "completed" && <span className="rounded-[3px] bg-bf-line px-1.5 text-[11px] font-semibold text-bf-sub">cached</span>}
+      {cached && status === "completed" && <RunTag inv={inv} />}
     </div>
   );
 }
@@ -549,7 +564,7 @@ function Investigator({ data, toast, compact }) {
   const head = (
     <div className="flex items-center gap-2 flex-wrap">
       {!status && <Btn kind="primary" className={compact ? "!py-1.5" : ""} disabled={!blocked} onClick={run}>Run investigator</Btn>}
-      {status && <InvStepper status={status} elapsed={elapsed} cached={inv?.cached} />}
+      {status && <InvStepper status={status} elapsed={elapsed} cached={inv?.cached} inv={inv} />}
       {!status && <span className="text-[12.5px] text-bf-sub leading-snug flex-1 min-w-[140px]">{blocked
         ? "Traces the blocked account's money: other mules, more victims, payments still stoppable."
         : "Available once the live call has a blocked account."}</span>}
@@ -633,8 +648,8 @@ function Overview({ data, toast, simulate }) {
       </div>
       <div className="flex-1 min-h-[300px] grid grid-cols-12 grid-rows-[minmax(0,1fr)] gap-[clamp(8px,0.8vw,16px)] mt-[clamp(8px,0.8vw,16px)]">
         <WatchTable data={data} onSimulate={simulate} />
-        <Gadget title="CREAO Fraud Investigator" className="col-span-4" bodyClass="px-4 pb-3 flex flex-col min-h-0"
-          right={inv?.run_id && inv.run_id !== "cached" ? <span className="font-mono text-[11px] text-bf-sub truncate max-w-[120px]">{inv.run_id}</span> : null}
+        <Gadget title="MargaretSGS Investigator (CREAO)" className="col-span-4" bodyClass="px-4 pb-3 flex flex-col min-h-0"
+          right={inv?.run_id && inv.run_id !== "cached" && !inv.cached ? <span className="font-mono text-[11px] text-bf-sub truncate max-w-[120px]">{inv.run_id}</span> : null}
           menu={liveKey ? [["Open case", `#/bank/cases/${liveKey}`]] : undefined}>
           <Investigator key={s?.call?.id || "none"} data={data} toast={toast} compact />
         </Gadget>
@@ -769,7 +784,7 @@ const PRIORITY = { Highest: ["⇈", "text-bf-red"], High: ["↑", "text-[#FF5630
 const Priority = ({ p }) => <span className="whitespace-nowrap"><b className={`${(PRIORITY[p] || PRIORITY.Medium)[1]} mr-1`}>{(PRIORITY[p] || PRIORITY.Medium)[0]}</b>{p}</span>;
 const Assignee = ({ a }) => (
   <span className="inline-flex items-center gap-2 whitespace-nowrap">
-    <ActorIcon actor={a === "ScamWatch seat" ? "scamwatch" : "analyst"} size="h-6 w-6 text-[10px]" />{a}
+    <ActorIcon actor={a === "MargaretSGS seat" ? "scamwatch" : "analyst"} size="h-6 w-6 text-[10px]" />{a}
   </span>
 );
 
@@ -856,7 +871,7 @@ function CaseDetail({ data, id, toast }) {
             </Section>
           )}
           {c.live && (
-            <Section title={<span className="inline-flex items-center gap-2"><ActorIcon actor="creao" size="h-6 w-6 text-[10px]" />CREAO Fraud Investigator</span>}
+            <Section title={<span className="inline-flex items-center gap-2"><ActorIcon actor="creao" size="h-6 w-6 text-[10px]" />MargaretSGS Investigator (CREAO)</span>}
               right={<span className="text-xs text-bf-sub">Agent proposes · analyst approves each block</span>}>
               <Investigator key={s?.call?.id || "none"} data={data} toast={toast} />
             </Section>
@@ -909,7 +924,7 @@ function CaseDetail({ data, id, toast }) {
             {c.live && <Decision s={s} caseKey={c.key} detail={c} toast={toast} compact data={data} />}
             <dl className="mt-4 grid grid-cols-[110px_1fr] gap-y-2 text-[14px]">
               <dt className="text-bf-sub">Assignee</dt><dd><Assignee a={c.assignee} /></dd>
-              <dt className="text-bf-sub">Reporter</dt><dd><Assignee a="ScamWatch seat" /></dd>
+              <dt className="text-bf-sub">Reporter</dt><dd><Assignee a="MargaretSGS seat" /></dd>
               <dt className="text-bf-sub">Priority</dt><dd><Priority p={c.priority} /></dd>
               <dt className="text-bf-sub">Protected</dt><dd className="font-semibold text-bf-green">{money(c.protected)}</dd>
               <dt className="text-bf-sub">Created</dt><dd>{fmtDate(c.created_at)}</dd>
@@ -1076,7 +1091,7 @@ function LossCurve({ log }) {
 function Model({ data }) {
   const [m, setM] = useState(null);
   useEffect(() => { fetch("/api/model").then((r) => r.json()).then(setM).catch(() => setM({})); }, []);
-  const head = <PageHead crumbs={[["Fraud Ops", "#/bank/overview"], ["Reports"], ["Model"]]} title="ScamWatch model" sub="The classifier behind the AI seat's gate. Measured on calls it never trained on." />;
+  const head = <PageHead crumbs={[["Fraud Ops", "#/bank/overview"], ["Reports"], ["Model"]]} title="MargaretSGS model" sub="The classifier behind the AI seat's gate. Measured on calls it never trained on." />;
   if (!m) return head;
   if (!m.model) return <div>{head}<Gadget title="No trained model yet">The live call is using the keyword fallback. Run training/train_baseline.py.</Gadget></div>;
   const heldout = m.int8_heldout || m.heldout;
@@ -1096,7 +1111,7 @@ function Model({ data }) {
     <div className="h-full overflow-y-auto scroll-thin pr-1">
       {head}
       <section className="mb-4 rounded-[4px] border border-bf-line border-l-[4px] border-l-bf-navy bg-white px-5 py-3 text-[14.5px] text-bf-ink leading-relaxed">
-        <b>How to read this page.</b> ScamWatch reads every caller line and labels which step of a scam it is: authority, fear, secrecy,
+        <b>How to read this page.</b> MargaretSGS reads every caller line and labels which step of a scam it is: authority, fear, secrecy,
         the “safe account” ask, reading out an account, or an ordinary call. One label never blocks anyone. The gate only blocks when the
         steps add up, the scam score passes {threshold(data).toFixed(2)}, the routing number is valid and the account isn't allowlisted.
         Every number below is measured on <b>{heldout?.n_calls || 200} calls the model never saw</b>, written by a different AI with a different prompt, unless it says “test set”.

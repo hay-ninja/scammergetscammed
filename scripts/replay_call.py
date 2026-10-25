@@ -1,4 +1,4 @@
-"""Regression check: replay recorded calls through ScamWatch and assert what should be blocked.
+"""Regression check: replay recorded calls through MargaretSGS and assert what should be blocked.
 
 Usage:  .venv/Scripts/python scripts/replay_call.py
 Uses a scratch copy of bank.db. Exits non-zero if any expectation fails.

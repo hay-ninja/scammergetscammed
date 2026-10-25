@@ -23,7 +23,7 @@ function Router() {
     <div className="flow h-full overflow-y-auto print:h-auto print:overflow-visible">
       <SiteNav route={route} />
       <Page />
-      <footer className="text-center font-fmono text-[11px] text-fl-mute py-12 print:hidden">scammer gets scammed · cal hacks 13.0 · calhacks federal credit union is a fictional demo bank</footer>
+      <footer className="text-center font-fmono text-[11px] text-fl-mute py-12 print:hidden">scammersgetscammed · cal hacks 13.0 · calhacks federal credit union is a fictional demo bank</footer>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 """Read models and analyst actions for the CalHacks Federal Fraud Ops console.
 
 Cases, members, payments, blocklist and audit views come from SQLite. The live case also reads the
-current call's session state, so the console shows the gate's evidence without changing ScamWatch.
+current call's session state, so the console shows the gate's evidence without changing MargaretSGS.
 """
 import json
 import re
@@ -13,7 +13,7 @@ from server.bank.seed import BANKS, BAY_FEDERAL
 from server.scamwatch.classifier import PRESSURE_STAGES
 
 ANALYST = "J. Rivera"
-SEAT = "ScamWatch seat"
+SEAT = "MargaretSGS seat"
 STAGE_WORDS = {"authority": "claims authority", "fear_urgency": "fear & urgency", "secrecy": "demands secrecy",
                "remote_access": "remote access"}
 GATE_LABELS = {"pressure_stages": f"{config.GATE_MIN_PRESSURE_STAGES}+ pressure tactic{'s' if config.GATE_MIN_PRESSURE_STAGES > 1 else ''}", "asked_for_safe_account_first": "“Safe account” asked first",

@@ -1,7 +1,7 @@
 """Margaret on the phone: Twilio → Cartesia STT → Gemini → Cartesia TTS, via Pipecat.
 
 This runs as its own process next to the dashboard server. Every caller line goes
-to ScamWatch through the same HTTP endpoints the text simulator uses, so the
+to MargaretSGS through the same HTTP endpoints the text simulator uses, so the
 phone and the simulator share one tested code path.
 
 Run (after `uvicorn server.main:app --port 8000` is up):
@@ -140,7 +140,7 @@ class Dashboard:
 
 
 class CallerTap(FrameProcessor):
-    """Sends caller speech to ScamWatch and adds the live coaching note before the LLM sees it."""
+    """Sends caller speech to MargaretSGS and adds the live coaching note before the LLM sees it."""
 
     def __init__(self, dash: Dashboard):
         super().__init__()
