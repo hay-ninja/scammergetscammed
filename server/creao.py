@@ -134,6 +134,71 @@ async def start(state: dict, on_update) -> dict | None:
     return inv
 
 
+async def rerun(state: dict, on_update) -> dict:
+    """Start a fresh live run while the findings already on screen (often a saved run) stay up.
+
+    Progress lives in `investigation.rerun`; the new findings replace the old ones only if the run succeeds.
+    """
+    cur = state.get("investigation")
+    if not cur or cur.get("status") != "completed":
+        return await start(state, on_update)
+    live = cur.get("rerun")
+    if live and live["status"] in ("queued", "running"):
+        return live
+    live = cur["rerun"] = {"status": "queued", "run_id": None, "started_at": time.time(), "finished_at": None, "error": None}
+    try:
+        async with httpx.AsyncClient(timeout=30) as c:
+            r = await c.post(f"{APPS}/{config.CREAO_AGENT_ID}/runs", headers=_headers(),
+                             json={"inputs": {"case_json": json.dumps(build_case(state))}})
+            r.raise_for_status()
+            live.update(run_id=r.json()["id"], status="running")
+        state["audit"].append(engine.audit("creao", "investigation_started", {"run_id": live["run_id"], "rerun": True}))
+        asyncio.create_task(_poll_rerun(state, live, on_update))
+    except (httpx.HTTPError, KeyError) as e:
+        live.update(status="failed", error=str(e)[:200])
+        state["audit"].append(engine.audit("creao", "investigation_failed", {"error": live["error"], "rerun": True}))
+    await on_update()
+    return live
+
+
+async def _poll_rerun(state: dict, live: dict, on_update) -> None:
+    deadline = time.time() + POLL_FOR_S
+    async with httpx.AsyncClient(timeout=30) as c:
+        while live["status"] == "running" and time.time() < deadline:
+            await asyncio.sleep(POLL_EVERY_S)
+            try:
+                run = (await c.get(f"{APPS}/{config.CREAO_AGENT_ID}/runs/{live['run_id']}", headers=_headers())).json()
+            except (httpx.HTTPError, ValueError):
+                continue
+            if run.get("status") not in ("completed", "failed", "cancelled"):
+                continue
+            result = run.get("result") or {}
+            text = await asyncio.to_thread(report_text, result)
+            findings = parse(text) if run.get("status") == "completed" else None
+            live["finished_at"] = time.time()
+            if not findings:
+                live.update(status="failed", error=run.get("errorCode") or "the agent's report had no valid JSON block")
+                state["audit"].append(engine.audit("creao", "investigation_failed", {"run_id": live["run_id"], "error": live["error"], "rerun": True}))
+            else:
+                old = state.get("investigation") or {}
+                inv = {"status": "completed", "run_id": live["run_id"], "started_at": live["started_at"], "finished_at": live["finished_at"],
+                       "agent_id": config.CREAO_AGENT_ID, "markdown": text, "findings": findings, "approved": old.get("approved", []),
+                       "error": None, "artifacts": result.get("artifacts", []),
+                       "minutes": round((live["finished_at"] - live["started_at"]) / 60, 1)}
+                runs[state["call"]["id"]] = state["investigation"] = inv
+                state["sar"] = {"status": "ready", "markdown": findings["sar_markdown"], "source": "MargaretSGS Investigator (CREAO)"}
+                state["audit"].append(engine.audit("creao", "investigation_completed", {
+                    "run_id": inv["run_id"], "minutes": inv["minutes"], "linked_mules": len(findings["linked_mule_accounts"]),
+                    "victims": len(findings["additional_victims"]), "rerun": True}))
+                RUNS_DIR.mkdir(parents=True, exist_ok=True)
+                (RUNS_DIR / f"{state['call']['id']}.json").write_text(json.dumps(inv, indent=1, default=str))
+            await on_update()
+            return
+    if live["status"] == "running":
+        live.update(status="failed", error="timed out waiting for the agent")
+        await on_update()
+
+
 async def _poll(state: dict, on_update) -> None:
     inv = state["investigation"]
     deadline = time.time() + POLL_FOR_S

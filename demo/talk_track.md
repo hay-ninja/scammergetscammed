@@ -17,7 +17,7 @@ know", the source is in brackets.
 > named Margaret answers scam calls, gets the scammer to read out the account they want the money sent to, and
 > the bank blocks that account before a real customer can send money to it."
 
-> "Why: Americans over 60 lost **$4.9 billion** to fraud in 2024, up 43% in a year [FBI IC3 2024]. The worst is the
+> "Why: Americans over 60 lost **$4.9 billion** to fraud in 2024. The scam that got the most money was
 > phantom hacker scam: fake tech support, then a fake bank, then a fake federal agent, and every version ends with
 > *move your money to a safe account*. The victim sends it themselves, so to the bank's fraud models it looks
 > legitimate. **$2.09 billion** was lost by bank transfer alone [FTC]. Banks only see it after the money's gone.

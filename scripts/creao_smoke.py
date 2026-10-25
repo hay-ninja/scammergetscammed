@@ -27,9 +27,9 @@ async def main() -> None:
     fixture = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "scripts" / "fixtures" / "real_call_1.json")
     seed.seed()
     s = CallSession(source="smoke")
-    for t in json.loads(fixture.read_text())["turns"]:
+    for i, t in enumerate(json.loads(fixture.read_text(encoding="utf-8"))["turns"]):
         if t["speaker"] == "caller":
-            s.caller_said(t["text"], ts=1_000_000 + t["t"])  # recorded timing, as in replay_call.py
+            s.caller_said(t["text"], ts=1_000_000 + t.get("t", i * 6))  # recorded timing when the fixture has it
         else:
             s.margaret_said(t["text"])
     blocked = [a for a in s.state["accounts"] if a["status"] == "blocked"]

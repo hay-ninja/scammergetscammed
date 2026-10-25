@@ -337,6 +337,17 @@ async def creao_run():
     return {k: inv[k] for k in ("status", "run_id", "error")}
 
 
+@app.post("/api/creao/rerun")
+async def creao_rerun():
+    """Run the agent again, live, without taking down the findings already shown (e.g. the saved run)."""
+    if not creao.enabled():
+        raise HTTPException(503, "set CREAO_API_KEY and CREAO_AGENT_ID in .env")
+    if not hub.session or not any(a["status"] == "blocked" for a in hub.session.state["accounts"]):
+        raise HTTPException(409, "no blocked account on the current call to investigate")
+    r = await creao.rerun(hub.session.state, hub.broadcast)
+    return {k: r.get(k) for k in ("status", "run_id", "error")}
+
+
 @app.post("/api/creao/fallback")
 async def creao_fallback():
     """CREAO not configured or too slow for the demo: load the cached findings for the seeded hidden ring."""

@@ -651,6 +651,30 @@ function InvFindings({ inv, toast, compact }) {
   );
 }
 
+// Start a fresh live CREAO run; the findings on screen stay until it finishes.
+const rerunCreao = (toast) => post("/api/creao/rerun")
+  .then(() => toast("CREAO is running again on the full ledger. Current findings stay up until it finishes."))
+  .catch((e) => toast(/503/.test(e.message) || /CREAO_API_KEY/.test(e.message) ? "CREAO isn't configured on this server." : e.message, true));
+
+function RerunStatus({ inv }) {
+  const r = inv?.rerun;
+  const [now, setNow] = useState(Date.now() / 1000);
+  const live = r && (r.status === "queued" || r.status === "running");
+  useEffect(() => { if (!live) return; const t = setInterval(() => setNow(Date.now() / 1000), 1000); return () => clearInterval(t); }, [live]);
+  if (!r) return null;
+  if (live) {
+    const s = Math.max(0, Math.floor(now - r.started_at));
+    return (
+      <div className="mt-1.5 flex items-center gap-2 text-[12.5px] text-bf-ink">
+        <span className="h-1.5 w-1.5 rounded-full bg-bf-amber animate-pulse" />
+        Live re-run {r.run_id ? <span className="font-mono">{String(r.run_id).slice(0, 8)}</span> : ""} · {Math.floor(s / 60)}m {String(s % 60).padStart(2, "0")}s
+        <span className="text-bf-sub">· showing current findings until it's done</span>
+      </div>
+    );
+  }
+  return r.status === "failed" ? <div className="mt-1.5 text-[12.5px] text-bf-sub">Live re-run didn't finish ({String(r.error || "failed").slice(0, 60)}). Showing the saved run.</div> : null;
+}
+
 function Investigator({ data, toast, compact }) {
   const { inv, blocked, status, elapsed, run, done } = useInvestigator(data, toast);
   const head = (
@@ -665,6 +689,7 @@ function Investigator({ data, toast, compact }) {
   return (
     <div className={compact ? "h-full flex flex-col min-h-0" : ""}>
       {head}
+      {done && <RerunStatus inv={inv} />}
       {status && !done && <div className="mt-3 text-[13.5px] text-bf-sub leading-snug">Tracing payments in and out of the blocked account across the ledger, linking accounts and members…
         <div className="mt-2 h-1.5 rounded-full bg-bf-bg overflow-hidden"><div className="h-full w-1/3 bg-bf-navy rounded-full animate-pulse" /></div></div>}
       {done && inv?.findings && <div className={compact ? "mt-2 flex-1 min-h-0 overflow-y-auto scroll-thin pr-1" : "mt-3"}><InvFindings inv={inv} toast={toast} compact={compact} /></div>}
@@ -742,7 +767,7 @@ function Overview({ data, toast, simulate }) {
         <WatchTable data={data} onSimulate={simulate} />
         <Gadget title="MargaretSGS Investigator (CREAO)" className="col-span-4" bodyClass="px-4 pb-3 flex flex-col min-h-0"
           right={inv?.run_id && inv.run_id !== "cached" && !inv.cached ? <span className="font-mono text-[11px] text-bf-sub truncate max-w-[120px]">{inv.run_id}</span> : null}
-          menu={liveKey ? [["Open case", `#/bank/cases/${liveKey}`]] : undefined}>
+          menu={liveKey ? [["Open case", `#/bank/cases/${liveKey}`], ["Run CREAO again (live)", () => rerunCreao(toast)]] : undefined}>
           <Investigator key={s?.call?.id || "none"} data={data} toast={toast} compact />
         </Gadget>
         <div className="col-span-3 flex flex-col gap-[clamp(8px,0.8vw,16px)] min-h-0">
@@ -956,7 +981,8 @@ function CaseDetail({ data, id, toast }) {
           )}
           {c.live && (
             <Section title={<span className="inline-flex items-center gap-2"><ActorIcon actor="creao" size="h-6 w-6 text-[10px]" />MargaretSGS Investigator (CREAO)</span>}
-              right={<span className="text-xs text-bf-sub">Agent proposes · analyst approves each block</span>}>
+              right={<span className="flex items-center gap-3"><span className="text-xs text-bf-sub">Agent proposes · analyst approves each block</span>
+                {s?.investigation?.status === "completed" && <Btn kind="subtle" className="!py-1 !px-2 !text-[12.5px]" onClick={() => rerunCreao(toast)}>Run again (live)</Btn>}</span>}>
               <Investigator key={s?.call?.id || "none"} data={data} toast={toast} />
             </Section>
           )}
