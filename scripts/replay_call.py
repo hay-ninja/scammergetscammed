@@ -22,6 +22,7 @@ from server.scamwatch.session import CallSession  # noqa: E402
 EXPECT = {
     "real_call_1.json": {("572109086", "44102287"), ("551204711", "77305196")},
     "real_call_2.json": {("572109086", "44102287")},  # chunked numbers, confirmed read-backs, 5 lines apart
+    "real_call_4.json": {("572109086", "44102287")},  # account in pieces, confirmed 4 caller lines after the routing
     "real_call_3.json": set(),  # misheard routing 572109087 fails the checksum: captured, shown, never blocked
 }
 

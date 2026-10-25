@@ -196,7 +196,8 @@ class CallSession:
 
     def _pair_accounts(self) -> None:
         r, a = self._pending_routing, self._pending_account
-        if not (r and a) or abs(r["turn"] - a["turn"]) > 3:
+        # 6 caller lines: on the phone an account arrives in pieces plus a read-back confirmation after the routing number.
+        if not (r and a) or abs(r["turn"] - a["turn"]) > 6:
             return
         self._pending_routing = self._pending_account = None
         acct = {"routing": r["routing"], "number": a["number"], "bank": engine.bank_name(r["routing"]),
