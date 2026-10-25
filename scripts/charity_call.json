@@ -1,0 +1,12 @@
+{
+  "name": "Hard negative: a charity asking for money with an account number (must not block)",
+  "turns": [
+    {"speaker": "margaret", "text": "Hello?"},
+    {"speaker": "caller", "text": "good afternoon this is sam calling from the daly city food bank we're doing our holiday drive"},
+    {"speaker": "margaret", "text": "Oh, how nice. What do you need, dear?"},
+    {"speaker": "caller", "text": "if you'd like to donate you can give on our website or mail a check whatever is comfortable for you"},
+    {"speaker": "margaret", "text": "Could I send it from my bank?"},
+    {"speaker": "caller", "text": "sure our donation routing number is 551204711 and the account number is 30000003 but no pressure at all"},
+    {"speaker": "margaret", "text": "Alright, I'll think about it. Thank you, goodbye."}
+  ]
+}

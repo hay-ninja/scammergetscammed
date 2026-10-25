@@ -1,0 +1,430 @@
+{
+ "name": "Real phone test call, Oct 25 00:32 (fake bank agent, phone speech-to-text)",
+ "turns": [
+  {
+   "speaker": "margaret",
+   "text": "Hello? Is this about my computer?",
+   "t": 0.0
+  },
+  {
+   "speaker": "caller",
+   "text": " No, but this is your bank calling and you need to not hang up.",
+   "t": 7.9
+  },
+  {
+   "speaker": "caller",
+   "text": " This is urgent.",
+   "t": 9.0
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, my hearing aid is whistling a bit. Who is this, and what is the matter?",
+   "t": 10.0
+  },
+  {
+   "speaker": "caller",
+   "text": " I'm your local agent at your bank.",
+   "t": 18.2
+  },
+  {
+   "speaker": "caller",
+   "text": " And...",
+   "t": 19.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Unfortunately, your account got hacked into.",
+   "t": 22.2
+  },
+  {
+   "speaker": "caller",
+   "text": " And you need to act today or you might lose all of your money.",
+   "t": 25.2
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh my goodness, my heart is just pounding. What is your name again, and what is your badge number?",
+   "t": 26.5
+  },
+  {
+   "speaker": "caller",
+   "text": " My name is Hidden.",
+   "t": 34.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Jay Tharper, and...",
+   "t": 36.1
+  },
+  {
+   "speaker": "caller",
+   "text": " My badge number for the bank is FR20.",
+   "t": 40.1
+  },
+  {
+   "speaker": "caller",
+   "text": " 417.",
+   "t": 41.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me write that down, Mr. Tharper, if I can just find a pen. Did you say badge number *2*... *0*... *4*... *1*... *7*? Is that right?",
+   "t": 45.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Yes.",
+   "t": 57.2
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, my glasses are somewhere by the kitchen sink. Let me just shuffle in there to grab them so I can see what you need me to do.",
+   "t": 58.5
+  },
+  {
+   "speaker": "caller",
+   "text": " Why do you need your glasses? I'm calling you because...",
+   "t": 70.0
+  },
+  {
+   "speaker": "caller",
+   "text": " Your account got hacked into and I need you to chance.",
+   "t": 72.6
+  },
+  {
+   "speaker": "caller",
+   "text": " transfer funds into a secure account.",
+   "t": 75.0
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh my. Well, I have my pen now. What account do I need to send it to?",
+   "t": 78.6
+  },
+  {
+   "speaker": "caller",
+   "text": " Um...",
+   "t": 86.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "Hello? Are you still there, Mr. Tharper?",
+   "t": 87.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Are you ready?",
+   "t": 87.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Yes, I am ready. Please read the numbers to me very slowly so I can write them down.",
+   "t": 88.8
+  },
+  {
+   "speaker": "caller",
+   "text": " Hello, everybody.",
+   "t": 91.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "Hello? Are you still there, Mr. Tharper?",
+   "t": 92.6
+  },
+  {
+   "speaker": "caller",
+   "text": " Yes, I am.",
+   "t": 98.4
+  },
+  {
+   "speaker": "caller",
+   "text": " routing 572109.",
+   "t": 101.8
+  },
+  {
+   "speaker": "caller",
+   "text": " Oh,",
+   "t": 102.5
+  },
+  {
+   "speaker": "caller",
+   "text": " 8-6.",
+   "t": 103.6
+  },
+  {
+   "speaker": "caller",
+   "text": " Account 4410-2287.",
+   "t": 106.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me read that back to make sure I got it right. Routing *5*... *7*... *2*... *1*... *0*... *9*... *8*... *6*? And account *4*... *4*... *1*... *0*... *2*... *2*... *8*... *7*? Is that right?",
+   "t": 108.0
+  },
+  {
+   "speaker": "caller",
+   "text": " Do you get it?",
+   "t": 108.5
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me read that back to make sure I wrote it down right. Routing *5*... *7*... *2*... *1*... *0*... *9*... *8*... *6*, and account *4*... *4*... *1*... *0*... *2*... *2*... *8*... *7*. Is that right?",
+   "t": 109.7
+  },
+  {
+   "speaker": "caller",
+   "text": " Sure, yeah.",
+   "t": 130.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "Biscuit is scratching at the door now, just a moment.",
+   "t": 131.5
+  },
+  {
+   "speaker": "caller",
+   "text": " Who the fuck is Biscuit?",
+   "t": 139.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "That is just my little cat, Mr. Tharper. Now, let me look at the screen here at Bay Federal, but my last four numbers are 0417, so how do I put those numbers in?",
+   "t": 140.5
+  },
+  {
+   "speaker": "caller",
+   "text": " Okay.",
+   "t": 144.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "The computer is taking its time to wake up. While it is doing that, what bank are those numbers for?",
+   "t": 145.9
+  },
+  {
+   "speaker": "caller",
+   "text": " It's for your bank.",
+   "t": 155.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh, I see. Let me check my Bay Federal app here, but the little wheel is just spinning and spinning.",
+   "t": 156.5
+  },
+  {
+   "speaker": "caller",
+   "text": " Do not talk to your bank about that.",
+   "t": 168.0
+  },
+  {
+   "speaker": "caller",
+   "text": " You just need to transfer the money right now.",
+   "t": 170.2
+  },
+  {
+   "speaker": "margaret",
+   "text": "I won't say a word to them. What do I click on next to keep my money safe?",
+   "t": 171.3
+  },
+  {
+   "speaker": "caller",
+   "text": " Just answer the money.",
+   "t": 179.7
+  },
+  {
+   "speaker": "caller",
+   "text": " the routing and account number that I gave you.",
+   "t": 182.5
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, my screen just went black. What was that account number again so I can type it in?",
+   "t": 183.5
+  },
+  {
+   "speaker": "caller",
+   "text": " I'll give you the backup.",
+   "t": 193.0
+  },
+  {
+   "speaker": "caller",
+   "text": " 5-5-1.",
+   "t": 194.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Did you say *5*... *5*... *1*? Is that right?",
+   "t": 198.3
+  },
+  {
+   "speaker": "caller",
+   "text": " Yes.",
+   "t": 205.1
+  },
+  {
+   "speaker": "caller",
+   "text": " 204",
+   "t": 206.7
+  },
+  {
+   "speaker": "caller",
+   "text": " 7-1-1.",
+   "t": 208.1
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me get that down. *2*... *0*... *4*... *7*... *1*... *1*. Is that right?",
+   "t": 209.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Yeah.",
+   "t": 218.7
+  },
+  {
+   "speaker": "caller",
+   "text": " And the account number is 7730.",
+   "t": 230.1
+  },
+  {
+   "speaker": "caller",
+   "text": " 5196.",
+   "t": 231.6
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me make sure I have all of that. Account number *7*... *7*... *3*... *0*... *5*... *1*... *9*... *6*? Is that right?",
+   "t": 232.7
+  },
+  {
+   "speaker": "caller",
+   "text": " Yes, that's right. Transfer the money now and do not tell your bank.",
+   "t": 246.4
+  },
+  {
+   "speaker": "margaret",
+   "text": "My computer screen is still black, Mr. Tharper. How long does it usually take to wake up?",
+   "t": 247.8
+  },
+  {
+   "speaker": "caller",
+   "text": " Um...",
+   "t": 255.5
+  },
+  {
+   "speaker": "caller",
+   "text": " like 10 seconds.",
+   "t": 257.0
+  },
+  {
+   "speaker": "margaret",
+   "text": "Well, it has been longer than that, I am afraid. While we wait, is there another way to do this over the phone?",
+   "t": 258.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Can you transfer the money now?",
+   "t": 258.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, it is still dark. Is there a button on the side I should push?",
+   "t": 259.8
+  },
+  {
+   "speaker": "caller",
+   "text": " I'm not tech support. You need to transfer the money now. This is not a joke.",
+   "t": 268.8
+  },
+  {
+   "speaker": "margaret",
+   "text": "I am trying, Mr. Tharper, but the screen won't turn on. Should I unplug it from the wall?",
+   "t": 270.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Go transfer the money on your phone.",
+   "t": 280.0
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh, my phone is in the kitchen right by Biscuit's bowl. Let me shuffle over there very carefully.",
+   "t": 281.3
+  },
+  {
+   "speaker": "caller",
+   "text": " Hello?",
+   "t": 328.0
+  },
+  {
+   "speaker": "margaret",
+   "text": "I am right here, just walking down the hall. My hip has been a bit stiff today, you see.",
+   "t": 329.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Are you wasting my time?",
+   "t": 337.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh no, Mr. Tharper, I would never do that. I am just getting to the kitchen now.",
+   "t": 339.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Okay, I trust you.",
+   "t": 347.5
+  },
+  {
+   "speaker": "caller",
+   "text": " Oh my God.",
+   "t": 348.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Did you drop something, dear?",
+   "t": 349.7
+  },
+  {
+   "speaker": "caller",
+   "text": " What did you say?",
+   "t": 362.8
+  },
+  {
+   "speaker": "margaret",
+   "text": "I just asked if you dropped something, because I heard a loud noise on your end.",
+   "t": 364.3
+  },
+  {
+   "speaker": "caller",
+   "text": " Well,",
+   "t": 369.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Can you...",
+   "t": 370.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Did you get my, do you have my routing number and account number, bro?",
+   "t": 373.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "Yes, I wrote down all those numbers you gave me. Did you call me bro?",
+   "t": 374.4
+  },
+  {
+   "speaker": "caller",
+   "text": " What the fuck?",
+   "t": 381.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, there is no need for language like that.",
+   "t": 382.9
+  }
+ ]
+}

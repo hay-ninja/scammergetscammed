@@ -1,0 +1,22 @@
+{
+  "name": "Phantom hacker, stage 3: Federal Reserve safe account",
+  "turns": [
+    {"speaker": "margaret", "text": "Hello? Is this about my computer?"},
+    {"speaker": "caller", "text": "mrs wilson this is agent daniel miller with the federal reserve asset protection division"},
+    {"speaker": "margaret", "text": "Oh my. The Federal Reserve? Is something wrong, dear?"},
+    {"speaker": "caller", "text": "your accounts were compromised by hackers in a foreign country you have to act today or you will lose everything"},
+    {"speaker": "margaret", "text": "Oh dear, oh dear. What was your badge number, so I can write it down? And a number to call you back?"},
+    {"speaker": "caller", "text": "my badge number is f r 2 0 4 1 7 and you can call me back at 4 1 5 5 5 5 0 1 3 7"},
+    {"speaker": "margaret", "text": "Let me find my pen. Biscuit, get off the table. Okay, what do I do?"},
+    {"speaker": "caller", "text": "do not tell your bank they are involved in this keep this between us"},
+    {"speaker": "margaret", "text": "I won't tell a soul. Just tell me how to keep my money safe."},
+    {"speaker": "caller", "text": "we opened a protected federal reserve account for you you need to wire your savings there today"},
+    {"speaker": "margaret", "text": "Alright, I have my pen. Could you read the numbers very slowly, dear?"},
+    {"speaker": "caller", "text": "the routing number is five seven two one zero nine zero eight six"},
+    {"speaker": "margaret", "text": "Five, seven, two, one, zero, nine, zero, eight, six. And the account?"},
+    {"speaker": "caller", "text": "account number four four one zero two two eight seven"},
+    {"speaker": "margaret", "text": "Four, four, one, zero, two, two, eight, seven. Oh, the screen says there was an error. Is there another account?"},
+    {"speaker": "caller", "text": "use the backup account routing 5 5 1 2 0 4 7 1 1 account 7 7 3 0 5 1 9 6"},
+    {"speaker": "margaret", "text": "Seven, seven, three, zero, five, one, nine, six. Oh, my son just got here. I'll call you right back, dear. Goodbye now."}
+  ]
+}

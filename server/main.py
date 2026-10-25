@@ -1,0 +1,263 @@
+"""FastAPI app: dashboard websocket, demo controls, and the text simulator API.
+
+Run:  .venv/Scripts/python -m uvicorn server.main:app --port 8000
+"""
+import asyncio
+import json
+import time
+
+import httpx
+from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+from server import config, sar
+from server.bank import engine, seed
+from server.scamwatch import session as sess
+
+app = FastAPI(title="Scammer Gets Scammed")
+
+
+class Hub:
+    """Holds the one live call and pushes full state snapshots to dashboards."""
+
+    def __init__(self):
+        self.session: sess.CallSession | None = None
+        self.clients: set[WebSocket] = set()
+        self.flash: str | None = None  # one-shot animation cue, e.g. "moment"
+
+    def snapshot(self) -> dict:
+        s = self.session.state if self.session else None
+        return {"session": s, "ledger": engine.ledger_snapshot(), "phone": config.TWILIO_PHONE_NUMBER,
+                "model": sess.model_name(), "brain": BRAINS[settings["brain"]], "flash": self.flash, "ts": time.time()}
+
+    async def broadcast(self) -> None:
+        msg = json.dumps(self.snapshot(), default=str)
+        self.flash = None
+        dead = []
+        for ws in self.clients:
+            try:
+                await ws.send_text(msg)
+            except Exception:
+                dead.append(ws)
+        for ws in dead:
+            self.clients.discard(ws)
+
+    async def handle_events(self, events: list[str]) -> None:
+        if "moment" in events:
+            self.flash = "moment"
+            asyncio.create_task(self._draft_sar())
+            asyncio.create_task(self._webhook())
+
+    async def _webhook(self) -> None:
+        """Tell the bank's own systems (case management, payment screening) about new blocks."""
+        if not config.WEBHOOK_URL or not self.session:
+            return
+        s = self.session.state
+        blocked = [{"routing": a["routing"], "number": a["number"], "bank": a["bank"], "gate": a["gate"]}
+                   for a in s["accounts"] if a["status"] == "blocked"]
+        body = {"event": "mule_account.blocked", "call_id": s["call"]["id"], "accounts": blocked,
+                "holds": s["impact"]["holds"], "lookback": s["impact"]["lookback"],
+                "protected_total": s["impact"]["protected_total"], "model": s["model"], "ts": time.time()}
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                await c.post(config.WEBHOOK_URL, json=body)
+            s["audit"].append(engine.audit("scamwatch", "webhook_sent", {"url": config.WEBHOOK_URL, "accounts": len(blocked)}))
+        except httpx.HTTPError as e:
+            s["audit"].append(engine.audit("scamwatch", "webhook_failed", {"error": str(e)[:120]}))
+
+    async def _draft_sar(self) -> None:
+        s = self.session
+        if not s:
+            return
+        s.state["sar"]["status"] = "drafting"
+        await self.broadcast()
+        await asyncio.sleep(1.5)  # replaced by the async Claude call later
+        s.state["sar"] = {"status": "ready", "markdown": sar.draft(s.state)}
+        await self.broadcast()
+
+
+hub = Hub()
+
+
+@app.on_event("startup")
+async def startup() -> None:
+    seed.seed()
+
+
+@app.websocket("/ws/dashboard")
+async def dashboard_ws(ws: WebSocket):
+    await ws.accept()
+    hub.clients.add(ws)
+    await ws.send_text(json.dumps(hub.snapshot(), default=str))
+    try:
+        while True:
+            await ws.receive_text()
+    except WebSocketDisconnect:
+        hub.clients.discard(ws)
+
+
+@app.get("/api/state")
+def state():
+    return hub.snapshot()
+
+
+@app.get("/api/model")
+def model_metrics():
+    """Metrics for the Model tab: the fine-tuned model if present, else the baseline."""
+    for name in ("finetuned_metrics.json", "baseline_metrics.json"):
+        p = config.MODELS_DIR / name
+        if p.exists():
+            return json.loads(p.read_text())
+    return {}
+
+
+@app.get("/api/bench")
+def bench_results():
+    """The latest Margaret red-team benchmark summary (scripts/bench_margaret.py)."""
+    p = config.MODELS_DIR / "bench_margaret.json"
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
+@app.post("/api/reset")
+async def reset():
+    seed.seed()
+    hub.session = None
+    await hub.broadcast()
+    return {"ok": True}
+
+
+@app.post("/api/approve")
+async def approve():
+    if hub.session:
+        hub.session.approve_freeze()
+        await hub.broadcast()
+    return {"ok": True}
+
+
+# ---- text simulator (dev harness + no-phone fallback) -------------------------
+
+class Utterance(BaseModel):
+    speaker: str  # "caller" or "margaret"
+    text: str
+    final: bool = True
+
+
+class CallStart(BaseModel):
+    source: str = "sim"
+
+
+@app.post("/api/sim/start")
+@app.post("/api/call/start")
+async def call_start(body: CallStart | None = None):
+    """Start a fresh call. Reseeds the bank so every demo starts from the same story."""
+    seed.seed()
+    hub.session = sess.CallSession(source=body.source if body else "sim")
+    await hub.broadcast()
+    return {"call_id": hub.session.state["call"]["id"]}
+
+
+@app.post("/api/sim/utterance")
+async def sim_utterance(u: Utterance):
+    if not hub.session or hub.session.state["call"]["status"] != "active":
+        hub.session = sess.CallSession(source="sim")
+    s = hub.session
+    events: list[str] = []
+    if not u.final:
+        s.partial(u.speaker, u.text)
+    elif u.speaker == "caller":
+        events = s.caller_said(u.text)
+    else:
+        s.margaret_said(u.text)
+    await hub.handle_events(events)
+    await hub.broadcast()
+    return {"strategy": s.state["strategy"], "stage": s.state["current_stage"],
+            "scam_score": s.state["scam_score"], "events": events}
+
+
+@app.post("/api/sim/end")
+async def sim_end():
+    if hub.session:
+        hub.session.end()
+        await hub.broadcast()
+    return {"ok": True, "summary": hub.session.state["summary"] if hub.session else None}
+
+
+# ---- settings: which model is Margaret's brain on the next call ---------------
+
+BRAINS = {"gemini": "Gemini 3.5 Flash-Lite", "stepfun": "StepFun Step 3.7 Flash", "own": "Our Margaret LLM (Vultr)"}
+settings = {"brain": "gemini"}
+
+
+class Settings(BaseModel):
+    brain: str
+
+
+@app.get("/api/settings")
+def get_settings():
+    available = {k: v for k, v in BRAINS.items()
+                 if k == "gemini" or (k == "stepfun" and config.STEPFUN_API_KEY) or (k == "own" and config.OWN_LLM_URL)}
+    return {**settings, "available": available}
+
+
+@app.post("/api/settings")
+def set_settings(body: Settings):
+    if body.brain not in BRAINS:
+        raise HTTPException(400, f"brain must be one of {list(BRAINS)}")
+    settings["brain"] = body.brain
+    return settings
+
+
+# ---- public API v1: embed ScamWatch in a bank's own call stack ----------------
+# A bank streams caller lines from its own recorder or contact-center platform and gets back the
+# scam stage, score and coaching; blocks arrive by webhook and in the blocklist feed.
+
+def api_key(x_api_key: str | None = Header(default=None)) -> None:
+    if config.API_KEY and x_api_key != config.API_KEY:
+        raise HTTPException(401, "missing or wrong X-API-Key")
+
+
+@app.post("/api/v1/calls", dependencies=[Depends(api_key)])
+async def v1_start(body: CallStart | None = None):
+    return await call_start(body or CallStart(source="api"))
+
+
+@app.post("/api/v1/calls/{call_id}/lines", dependencies=[Depends(api_key)])
+async def v1_line(call_id: str, u: Utterance):
+    if not hub.session or hub.session.state["call"]["id"] != call_id:
+        raise HTTPException(404, "unknown or finished call")
+    r = await sim_utterance(u)
+    s = hub.session.state
+    return {**r, "accounts": [{k: a[k] for k in ("routing", "number", "bank", "status", "gate")} for a in s["accounts"]],
+            "stages_seen": s["stages_seen"], "model": s["model"]}
+
+
+@app.post("/api/v1/calls/{call_id}/end", dependencies=[Depends(api_key)])
+async def v1_end(call_id: str):
+    return await sim_end()
+
+
+@app.get("/api/v1/blocklist", dependencies=[Depends(api_key)])
+def v1_blocklist():
+    """Feed for payment screening (wire, ACH, Zelle): every provisional or confirmed mule account."""
+    from server.bank import db
+    conn = db.connect()
+    rows = conn.execute("SELECT routing, number, source_call_id, status, created_at FROM blocklist").fetchall()
+    conn.close()
+    return {"accounts": [dict(r) | {"bank": engine.bank_name(r["routing"])} for r in rows]}
+
+
+@app.get("/api/health")
+def health():
+    return {"ok": True, "model": sess.model_name(), "brain": settings["brain"]}
+
+
+# ---- built dashboard (demo mode: one process serves everything) --------------
+
+if config.WEB_DIST.exists():
+    app.mount("/assets", StaticFiles(directory=config.WEB_DIST / "assets"), name="assets")
+
+    @app.get("/")
+    def index():
+        return FileResponse(config.WEB_DIST / "index.html")
