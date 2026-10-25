@@ -2,7 +2,7 @@
 
 **A bank fraud-ops tool that turns scam calls into blocked mule accounts.**
 
-Phantom-hacker scams have taken over $1B from seniors, and every one ends the same way: *"move your money to a safe account."* Margaret is an AI decoy grandma who answers scam calls for a bank, Bay Federal Credit Union (fictional). She plays along until the scammer reads out their "safe account." Within seconds that account is blocklisted, pending transfers to it are held, and past victims are found for recovery.
+Phantom-hacker scams have taken over $1B from seniors, and every one ends the same way: *"move your money to a safe account."* Margaret is an AI decoy grandma who answers scam calls for a bank, CalHacks Federal Credit Union (fictional). She plays along until the scammer reads out their "safe account." Within seconds that account is blocklisted, pending transfers to it are held, and past victims are found for recovery.
 
 **The AI that talks can't block anyone.** Blocking needs three things to agree: a separately trained scam-stage classifier, fixed rules (scam sequence, routing checksum, allowlist), and, for freezes, a human analyst.
 
@@ -59,7 +59,7 @@ Claude plays 30 scammers (5 scams × 6 tactics: standard, calm, aggressive, "are
 
 | Real | Simulated |
 |---|---|
-| Phone call, speech recognition, Margaret's voice and replies | Bay Federal's ledger and members |
+| Phone call, speech recognition, Margaret's voice and replies | CalHacks Federal's ledger and members |
 | Trained classifier and its held-out evaluation | The scammer (a judge with a script card) |
 | Number extraction, routing checksum, gate, holds, lookback, audit log | Training calls (synthetic, modeled on FBI/FTC scam patterns) |
 | | Notifying the receiving bank |

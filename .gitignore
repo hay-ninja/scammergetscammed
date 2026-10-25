@@ -12,3 +12,5 @@ dist/
 training/data/
 training/models/
 .DS_Store
+*.log
+.claude/

@@ -1,49 +1,48 @@
-# Demo script, timeline and submission checklist
+# Demo plan (locked 2:30 AM Sun; deadline 8:50 AM)
+
+## Clock
+| Time | What | Rule |
+|---|---|---|
+| now → 3:00 | Phone smoke test, then the script panel on `#/live` | |
+| 3:00 → 5:30 | CREAO investigator live, or hardcoded at 4:30 | **Feature code stops 5:30** |
+| 5:30 → 7:00 | Bug fixes only, 3 phone rehearsals + 1 sim rehearsal | **Hard stop for all code: 7:00** |
+| 7:00 → 8:05 | README, Devpost text, judge card, screenshots, final commit | No code |
+| 8:05 → 8:50 | Record the video (opens with THE MOMENT), upload, submit | Submit by 8:40 |
 
 ## Before each judge (30 s)
-1. Dashboard open on the projector at `localhost:8000`, fullscreen (F11).
-2. Click **Reset**. Check: status "Waiting for call", Dorothy's wire shows **PENDING**, blocklist is empty.
-3. Hand the judge `demo/judge_card.md` (printed or on a phone).
+1. Open `http://127.0.0.1:8000/#/live` on the projector (not `localhost`), fullscreen with F11.
+2. Open `…` → **Reset demo**. Check that it says "waiting for a call" and the phone number shows.
+3. Open a second tab at `#/bank/overview` and leave it there.
 
-## Click-by-click (3 min)
-| t | You say / do | Judge does | Screen must show |
+## Run of show (target 3:30, call ≤ 90 s)
+| t | You | Judge | Screen |
 |---|---|---|---|
-| 0:00 | "Phantom-hacker scams took $1B+ from seniors. Every one ends with *move your money to a safe account*." | | Header + big phone number |
-| 0:15 | "Margaret isn't real. Call her." | Dials, puts it on speaker | Status → **Live**, timer starts |
-| 0:25 | | Card lines 1–3 (Fed Reserve, act today, don't tell your bank) | Transcript; stages light up Authority → Fear → Secrecy |
-| 1:15 | | Gives badge FR-20417 and callback (415) 555-0137 when asked | Intel card fills |
-| 1:40 | | Card line 5: routing 572-109-086, acct 4410-2287 | Stage **Safe-account request** (red); account card with checksum ✓ |
-| 1:50 | | Margaret reads the digits back; judge confirms | Account #1: **BLOCKED (provisional)** |
-| 2:05 | | Margaret: "it didn't go through". Card line 6: 551-204-711 / 7730-5196 | Account #2 card |
-| 2:20 | "**This is the moment.**" Point at the impact strip. | | Dorothy's $8,500 → **HELD**; lookback: Harold $26k + June $15k → recall; **$49,500 protected**; SAR badge |
-| 2:40 | | Margaret: "my son's here", hangs up | Summary card: duration · 2 mules · $49,500 · 0 real data shared |
-| 2:45 | Click **SAR ready** → show the draft → close. Click **Approve freeze**. | | Blocklist → **confirmed**; audit row from `analyst` |
-| 2:55 | "The AI that talks can't block anyone. A trained classifier, fixed rules and a human all have to agree." | | Audit log visible |
+| 0:00 | "Americans 60+ lost $4.9B to fraud last year. Phantom hacker scams always end with *move your money to a safe account*." | | `#/live`, number showing |
+| 0:20 | "Phantom hacker: a fake tech support, then a fake bank, then a fake federal agent who gives you a 'safe account'. You're that agent. Call this number and read the script on screen." | Dials (832) 934-9457 on speaker | Script panel shows the Federal Reserve script |
+| 0:30 | Point at the stage the model is calling for each line and the scam likelihood bar | Reads lines 1–4 | Stages light up, intel card fills |
+| 1:20 | "Now the account." | Reads routing + account in short chunks | Account card: checksum ✓, gate checks |
+| 1:40 | "**This is the moment.**" | Margaret says it failed; judge gives the backup, she says goodbye | Red moment card on `#/live` |
+| 2:00 | Click **Open in CalHacks Federal →** | | Bank overview: mule flagged, Dorothy's $8,500 HELD, lookback recalls |
+| 2:20 | "Now the bank acts. The CREAO investigator searches the whole ledger behind this account." Run it | | Findings: hidden ring accounts, victims, proposed blocks |
+| 2:50 | Approve one proposed block, then **Approve freeze**. "The AI that talks can't block anyone. A trained model, fixed rules and a human all have to agree." | | Audit log lines from analyst |
+| 3:10 | "Any bank can plug this in: one API, one webhook." Then `#/how` for the stack | | Architecture page |
 
-**If the phone or Wi-Fi fails:** click Reset, then run `.venv/Scripts/python scripts/sim_call.py scripts/judge_script.json`. Same screen, same moment.
-**If the judge improvises their own account numbers:** they still get blocked. The lookback finds nothing and the UI says so.
+**Judge goes off-script:** fine. Margaret plays along and numbers still get captured and checked.
+**Phone fails:** Reset, then `.venv/Scripts/python scripts/sim_call.py scripts/judge_script.json`. Same screens.
+**CREAO slow or down:** the hardcoded findings (from the seeded hidden ring) show instead. Same screen.
 
-## Tonight's timeline (gates are hard)
-| By | Done = | If missed |
-|---|---|---|
-| 9:00 PM | P0 #1–4: the sim run shows the full moment on the dashboard | Nothing else starts until it does |
-| 11:30 PM | P0 #5–6: a real phone call reaches Margaret's voice and triggers the moment | Demo is sim-only with Margaret's voice on laptop speakers |
-| 1:30 AM | P1 #7–9: Claude SAR, abuse test, Model tab | Cut in reverse order: #10 → #9 → #8 → #7 |
-| 3:00 AM | P1 #10 integration surface; optional Vultr fine-tune if it's running | Skip |
-| Before video | At least 3 full phone rehearsals and 1 sim rehearsal | |
-| ~7:30 AM | Video recorded, README + Devpost text written | |
-| 8:50 AM | **Submitted (hard deadline)** | |
+## Cut list (in this order) and what to say if asked
+1. **Option C, our own Margaret LLM.** "We fine-tuned the model that makes the decisions, not the voice. That's deliberate: the voice has no power."
+2. **Phases 1–2 of the phantom scam, and chaining handoff numbers.** "We demo phase 3 because that's where the money moves. Phases 1 and 2 are in our training data and the scripts page."
+3. **Extra live scripts.** Live: the Federal Reserve script, plus the title-company trick test only if a judge asks for a trap. "The other five are sim-tested; they're on the scripts page."
+4. **Claude SAR rewrite.** "Claude wrote our 2,500-call training set and runs the red-team benchmark. The SAR draft comes from the case data and goes to an analyst."
+5. **Nessie ledger.** "The ledger sits behind one adapter. SQLite for the demo, and a Nessie seed script shows a second backend."
+6. **v3 classifier from Vultr.** Ship the current model (0 false blocks on held-out legitimate calls). "We only swap models when the new one beats the old on held-out calls with zero false blocks."
+7. **Site polish.** Nothing to say.
 
-## Submission and track checklist
-- [ ] **Devpost:** opt into every prize below. Fill in the repo link, the video, and "what's real vs simulated" (copy it from the README).
-- [ ] **Video, about 2 min, opens with THE MOMENT** and then rewinds to the call. This covers Hyphenate (moment first) and Cartesia (demo first).
-- [ ] **Cartesia:** README section "Cartesia features used" (STT and Sonic over a live phone line) and the responsible-use list.
-- [ ] **Hyphenate:** the pitch line "Fraud Intelligence Analyst and Payments Controls Officer seat", limited powers, audit log, human approver, held-out test set.
-- [ ] **Best Solo Hack:** say "solo" in Devpost.
-- [ ] **Microsoft (Real World / Customer Impact):** frame it as a production-minded finance agent. Point to the BankAdapter, the reversible holds, the audit trail, and the $ protected per call.
-- [ ] **Armadin (Security):** the threat model is "scammer or prompt injection tries to get an innocent account blocked". Show the abuse-test result (0 wrong blocks) and that the LLM has no block permission. Check the criteria when they're posted.
-- [ ] **MLH Gemini:** Gemini Flash is Margaret's brain, live.
-- [ ] **Anthropic:** Claude generated the training data and drafts the SAR. Name the community: *seniors at small credit unions targeted by phantom-hacker scams*.
-- [ ] **Cal Hacks People-First:** automatic consideration, nothing to do.
-- [ ] Stretch, **MLH Vultr:** needs credits, then run `training/train_transformer.py` on the Vultr GPU over SSH. Ship it only if FP = 0 and it beats the baseline.
-- [ ] Stretch, **.tech domain:** `scammergetscammed.tech`, after the video.
+## Submission checklist (7:00 → 8:40)
+- [ ] Video, about 2 min, opens with THE MOMENT, then rewinds to the call
+- [ ] Devpost: seats line "Fraud Intelligence Analyst + Payments Controls Officer for CalHacks Federal Credit Union"; real vs simulated; proof numbers; opt into Cartesia, Hyphenate, Best Solo, Microsoft, Armadin, MLH Gemini, MLH Vultr, Anthropic, CREAO
+- [ ] Named community (Anthropic): seniors at small credit unions targeted by phantom-hacker scams
+- [ ] README: run steps, Cartesia features used, real vs simulated, limitations
+- [ ] Final commit and push

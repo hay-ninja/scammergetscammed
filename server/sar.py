@@ -14,7 +14,7 @@ def draft(state: dict) -> str:
         "# SUSPICIOUS ACTIVITY REPORT — DRAFT",
         "**Analyst review required before filing.**",
         "",
-        f"**Filing institution:** Bay Federal Credit Union  ",
+        f"**Filing institution:** CalHacks Federal Credit Union  ",
         f"**Date:** {date.today().isoformat()}  ",
         f"**Case source:** Decoy line call `{state['call']['id']}`",
         "",

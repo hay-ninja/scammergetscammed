@@ -1,0 +1,18 @@
+{
+  "own": {
+    "n": 48,
+    "first_token_p50": 0.148,
+    "first_token_p95": 0.177,
+    "full_reply_p50": 1.939,
+    "full_reply_p95": 2.375,
+    "words_avg": 23.9
+  },
+  "gemini": {
+    "n": 48,
+    "first_token_p50": 0.575,
+    "first_token_p95": 0.834,
+    "full_reply_p50": 0.682,
+    "full_reply_p95": 0.915,
+    "words_avg": 19.0
+  }
+}

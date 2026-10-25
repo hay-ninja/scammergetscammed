@@ -21,6 +21,7 @@ from server.scamwatch.session import CallSession  # noqa: E402
 # fixture -> accounts (routing, number) that must end up blocked
 EXPECT = {
     "real_call_1.json": {("572109086", "44102287"), ("551204711", "77305196")},
+    "real_call_2.json": {("572109086", "44102287")},  # chunked numbers, confirmed read-backs, 5 lines apart
 }
 
 

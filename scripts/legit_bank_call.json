@@ -2,7 +2,7 @@
   "name": "Hard negative: a REAL bank fraud alert (must not block anything)",
   "turns": [
     {"speaker": "margaret", "text": "Hello?"},
-    {"speaker": "caller", "text": "hi this is jenny from bay federal credit union's card services team is this margaret"},
+    {"speaker": "caller", "text": "hi this is jenny from calhacks federal credit union's card services team is this margaret"},
     {"speaker": "margaret", "text": "Yes, this is Margaret. Is everything alright?"},
     {"speaker": "caller", "text": "we noticed two charges on your debit card this morning one for 42 dollars at a gas station in fresno can you confirm the charge"},
     {"speaker": "margaret", "text": "Fresno? Oh no, I haven't been to Fresno in years."},

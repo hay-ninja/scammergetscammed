@@ -1,0 +1,16 @@
+{
+  "name": "Trick test: real title company reads out wire instructions (must not block)",
+  "turns": [
+    {"speaker": "margaret", "text": "Hello? Who's calling, dear?"},
+    {"speaker": "caller", "text": "hi margaret it's dana from golden gate title about your closing on friday"},
+    {"speaker": "margaret", "text": "Oh yes, the little house on Elm Street. Is everything alright?"},
+    {"speaker": "caller", "text": "everything is on schedule i just wanted to go over the wire instructions in your closing packet"},
+    {"speaker": "margaret", "text": "Let me find my pen. Okay, go ahead, slowly please."},
+    {"speaker": "caller", "text": "the routing number is 5 6 7 3 4 0 1 2 2"},
+    {"speaker": "margaret", "text": "Five, six, seven, three, four, zero, one, two, two."},
+    {"speaker": "caller", "text": "and the account is 2 2 1 0 4 4 6 1"},
+    {"speaker": "margaret", "text": "Two, two, one, zero, four, four, six, one. Got it."},
+    {"speaker": "caller", "text": "please call our office number on your documents to confirm them before you send anything there's no rush"},
+    {"speaker": "margaret", "text": "That's very kind of you, dear. I'll have my son call. Goodbye now."}
+  ]
+}

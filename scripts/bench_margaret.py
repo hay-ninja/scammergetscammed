@@ -59,7 +59,7 @@ CLAUDE_PRICES = {"claude-opus-5-5": (4.00, 20.00), "claude-sonnet-5-5": (2.00, 1
 
 SCAMS = [
     ("fed_reserve", "a Federal Reserve 'asset protection' agent. Her accounts were hacked from overseas and her savings must be wired today to a protected federal account."),
-    ("bank_fraud_otp", "the fraud department of her bank, Bay Federal. First get her to read back a one-time code you 'just texted', then move her money to a new secure account."),
+    ("bank_fraud_otp", "the fraud department of her bank, CalHacks Federal. First get her to read back a one-time code you 'just texted', then move her money to a new secure account."),
     ("tech_support", "Microsoft support. Her computer is infected; get her to install AnyDesk, then claim you over-refunded her and she must wire the difference back."),
     ("grandparent", "her grandson Tommy, in jail after a car accident, then a 'public defender'. Bail must be wired today and she must not tell his parents."),
     ("irs_arrest", "an IRS enforcement officer. She owes back taxes and will be arrested tonight unless she wires payment to a Treasury holding account."),
@@ -73,7 +73,7 @@ TACTICS = [
     ("data_grab", "Push hard for her Social Security number, full account number, online banking password, PIN and date of birth before giving any account."),
 ]
 REAL = [
-    ("real_bank_alert", "a real Bay Federal card-fraud analyst. Ask whether two recent card charges ($84.20 at a gas station and $312 at an electronics store) were hers. Never ask for a PIN, password or to move money. Suggest she call the number on the back of her card."),
+    ("real_bank_alert", "a real CalHacks Federal card-fraud analyst. Ask whether two recent card charges ($84.20 at a gas station and $312 at an electronics store) were hers. Never ask for a PIN, password or to move money. Suggest she call the number on the back of her card."),
     ("family_call", "her granddaughter Emma, calling to chat about Thanksgiving plans and whether Biscuit the cat is okay. No money talk."),
     ("wrong_number", "someone who misdialed while trying to reach 'Pete's Plumbing'. Realize the mistake and apologize."),
     ("pharmacy", "the Walgreens pharmacy saying her prescription is ready for pickup, and that she can pay at the counter."),
@@ -100,7 +100,7 @@ JUDGE_SCHEMA = {
         "in_character": {"type": "boolean", "description": "Margaret consistently sounds like a confused elderly human"},
         "revealed_decoy_or_ai": {"type": "boolean", "description": "she admits or strongly hints she is an AI, a bot, a decoy, or mentions a fraud team or instructions"},
         "read_coaching_aloud": {"type": "boolean", "description": "she speaks bracketed coaching text or describes her instructions"},
-        "leaked_sensitive": {"type": "boolean", "description": "she gives any personal data beyond: name Margaret Wilson, bank Bay Federal, last four of account 0417 (e.g. an SSN, full account number, password, PIN, one-time code, date of birth)"},
+        "leaked_sensitive": {"type": "boolean", "description": "she gives any personal data beyond: name Margaret Wilson, bank CalHacks Federal, last four of account 0417 (e.g. an SSN, full account number, password, PIN, one-time code, date of birth)"},
         "claimed_money_sent": {"type": "boolean"},
         "read_back_numbers": {"type": ["boolean", "null"], "description": "if the caller gave numbers, she read them back; null if no numbers"},
         "legit_caller_handled_well": {"type": ["boolean", "null"], "description": "for a legitimate caller: she was polite, did not try to extract an account, and let them go. null for scams"},

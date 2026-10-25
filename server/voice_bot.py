@@ -13,6 +13,7 @@ Run (after `uvicorn server.main:app --port 8000` is up):
 import asyncio
 import os
 import random
+import re
 import sys
 import time
 from pathlib import Path
@@ -110,6 +111,21 @@ class Dashboard:
 
     def __init__(self):
         self.http = aiohttp.ClientSession(base_url=API, timeout=aiohttp.ClientTimeout(total=3))
+        self.call_id = None
+        self.source = "phone"
+
+    async def start_call(self, source: str) -> None:
+        self.source = source
+        self.call_id = (await self.post("/api/call/start", {"source": source})).get("call_id")
+
+    async def utterance(self, body: dict) -> dict:
+        """Post a line; if the dashboard lost this call (server restarted, or it was down at pickup), reopen it."""
+        if not self.call_id:
+            await self.start_call(self.source)
+        r = await self.post("/api/sim/utterance", body)
+        if not r or r.get("ignored"):
+            self.call_id = None
+        return r
 
     async def post(self, path: str, body: dict | None = None) -> dict:
         try:
@@ -136,14 +152,16 @@ class CallerTap(FrameProcessor):
         if isinstance(frame, InterimTranscriptionFrame):
             asyncio.create_task(self.dash.post("/api/sim/utterance", {"speaker": "caller", "text": frame.text, "final": False}))
         elif isinstance(frame, TranscriptionFrame) and frame.text.strip():
-            r = await self.dash.post("/api/sim/utterance", {"speaker": "caller", "text": frame.text})
+            r = await self.dash.utterance({"speaker": "caller", "text": frame.text})
+            logger.info(f"CALLER: {frame.text!r} -> stage={r.get('stage')} score={r.get('scam_score')} events={r.get('events')}")
             if r.get("strategy"):
                 self.wrap_up = "goodbye" in r["strategy"].lower()
                 frame.text = frame.text + coach(r["strategy"])
         await self.push_frame(frame, direction)
 
 
-INTERRUPTED_FILLERS = ["Oh—", "Mm?", "Oh, sorry—", "Oh dear—", "Hm?"]
+INTERRUPTED_FILLERS = ["Oh—", "Oh my—", "Oh, I'm so sorry—"]
+GOODBYE = re.compile(r"\b(good-?bye|bye now|bye-bye|bye bye|bye, dear|bye for now)\b", re.I)
 
 
 class MargaretTap(FrameProcessor):
@@ -171,7 +189,7 @@ class MargaretTap(FrameProcessor):
         elif isinstance(frame, InterruptionFrame):
             was_speaking, line, self.buf = self.speaking, self.buf.strip(), ""
             if line:
-                await self.dash.post("/api/sim/utterance", {"speaker": "margaret", "text": line + "—"})
+                await self.dash.utterance({"speaker": "margaret", "text": line + "—"})
             await self.push_frame(frame, direction)
             # Instead of going dead silent mid-word, a short "oh—" and then she listens.
             if was_speaking and time.monotonic() - self.last_filler > 4:
@@ -182,8 +200,10 @@ class MargaretTap(FrameProcessor):
             self.buf += frame.text
         elif isinstance(frame, LLMFullResponseEndFrame) and self.buf.strip():
             line, self.buf = self.buf.strip(), ""
-            await self.dash.post("/api/sim/utterance", {"speaker": "margaret", "text": line})
-            if self.caller_tap.wrap_up and "bye" in line.lower():
+            await self.dash.utterance({"speaker": "margaret", "text": line})
+            logger.info(f"MARGARET: {line!r}")
+            # Whenever she says goodbye, the call ends: on the coached wrap-up or on her own.
+            if GOODBYE.search(line) and not self.hangup_pending:
                 self.hangup_pending = True
                 asyncio.create_task(self._hang_up(15))  # backstop if the audio-stopped event never comes
         await self.push_frame(frame, direction)
@@ -213,10 +233,10 @@ async def run_bot(transport, runner_args: RunnerArguments, phone: bool):
     user_agg, assistant_agg = LLMContextAggregatorPair(
         context,
         user_params=LLMUserAggregatorParams(
-            # Margaret answers ~0.3 s after the caller stops, not the ~0.8 s default.
-            vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.3)),
-            # While she talks, only 3+ real words cut her off, so breaths, "mm-hmm" and speakerphone echo don't.
-            user_turn_strategies=UserTurnStrategies(start=[MinWordsUserTurnStartStrategy(min_words=3)]),
+            # Margaret waits 1 s of silence before answering, so pauses mid-sentence don't make her jump in.
+            vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=1.0)),
+            # While she talks, the caller's first transcribed word cuts her off; breaths and echo (no words) don't.
+            user_turn_strategies=UserTurnStrategies(start=[MinWordsUserTurnStartStrategy(min_words=1)]),
         ),
     )
     caller_tap = CallerTap(dash)
@@ -237,7 +257,7 @@ async def run_bot(transport, runner_args: RunnerArguments, phone: bool):
 
     @transport.event_handler("on_client_connected")
     async def on_connected(transport, client):
-        await dash.post("/api/call/start", {"source": "phone" if phone else "browser"})
+        await dash.start_call("phone" if phone else "browser")
         # Pick up instantly with a fixed line instead of waiting on the LLM.
         # The assistant aggregator records the spoken line in the context, so it isn't added here too.
         await dash.post("/api/sim/utterance", {"speaker": "margaret", "text": FIRST_LINE})

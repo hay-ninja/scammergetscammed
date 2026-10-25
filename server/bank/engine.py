@@ -46,7 +46,9 @@ def block_account(routing: str, number: str, call_id: str) -> dict:
     def rows(status: str, since_days: int | None = None):
         q = ("SELECT t.id, t.amount, t.created_at, t.to_name, c.name, c.age FROM transfers t "
              "JOIN accounts a ON a.id = t.from_account JOIN customers c ON c.id = a.customer_id "
-             "WHERE t.to_routing=? AND t.to_number=? AND t.status=?")
+             "WHERE t.to_routing=? AND t.to_number=? AND t.status=? "
+             # Money passed along by another mule isn't a new victim's: counting it would double count.
+             "AND COALESCE(c.risk_flags, '') NOT LIKE '%new account%'")
         args = [routing, number, status]
         if since_days:
             q += " AND t.created_at >= ?"

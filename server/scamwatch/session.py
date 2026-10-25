@@ -9,11 +9,13 @@ import uuid
 
 from server import config
 from server.bank import engine
+from server.bank.seed import BAY_FEDERAL
 from server.scamwatch import classifier as clf
 from server.scamwatch import rules
 from server.scamwatch.extractor import WORD_DIGITS, _tokens, aba_valid, digit_runs, extract
 
 _model = clf.load()
+CONFIRM = re.compile(r"(?:yes|yeah|yep|yup|correct|right|that's right|thats right|that is right|that's correct|exactly|uh huh)\b")
 FILLER_ONLY = re.compile(r"(?:(?:yes|yeah|yep|yup|ok|okay|sure|right|correct|uh|um|mm|hmm|hello|that's right|thats right"
                          r"|got it|do you get it|did you get that)[\s.,?!]*)+")
 
@@ -34,8 +36,8 @@ STRATEGY = {
     "fear_urgency": "Get scared. Ask them to explain slowly what happened and what you should do. If they claim to be an official, ask for a badge number once.",
     "secrecy": "Agree not to tell anyone. Ask what you should do to keep your money safe.",
     "remote_access": "Say the computer is very slow and you can't find the button. Ask what to do instead.",
-    "safe_account_request": "Say you're ready and have a pen. Ask them to read the routing and account number very slowly.",
-    "account_1": "Read the numbers back digit by digit. Then say the screen shows an error and ask if there is another account.",
+    "safe_account_request": "Say you're willing and ask exactly what you should do. Only if they mention an account, say you have a pen and ask them to read it very slowly.",
+    "account_1": "Read the account number back once if you haven't. Then say you'll go take care of it right now, thank them warmly, and say goodbye.",
     "account_2": "Read the numbers back digit by digit. Then say your son just arrived and you'll call them back. Say goodbye.",
     "not_scam": "This sounds like a normal, honest caller. Be warm, answer simply, wrap up kindly and say goodbye.",
 }
@@ -68,6 +70,7 @@ class CallSession:
         self._pending_account: dict | None = None
         self._turn = 0
         self._frags: list[tuple[float, str]] = []
+        self._readback: str | None = None
 
     # ---- inputs -------------------------------------------------------------
 
@@ -77,6 +80,9 @@ class CallSession:
     def margaret_said(self, text: str) -> None:
         self.state["partial"] = None
         self.state["transcript"].append({"speaker": "margaret", "text": text.replace("*", ""), "ts": time.time()})
+        # Her read-back of a full number; it counts once the caller confirms it ("yes", "that's right").
+        rb = extract(text)
+        self._readback = text if rb["routing"] or rb["accounts"] else None
 
     def caller_said(self, text: str, ts: float | None = None) -> list[str]:
         """Process one final caller utterance. Returns event tags (e.g. 'moment')."""
@@ -92,7 +98,7 @@ class CallSession:
         # A stage counts as seen when the model gives it real probability, not only when it's the top pick,
         # so "move your money to this safe account, routing ..." registers both stages.
         for s in clf.SCAM_STAGES:
-            if (s == stage or pred["probs"].get(s, 0) >= 0.3) and s not in self.state["stages_seen"]:
+            if (s == stage or pred["probs"].get(s, 0) >= config.STAGE_SEEN_MIN_PROB) and s not in self.state["stages_seen"]:
                 self.state["stages_seen"].append(s)
         if rules.safe_account_request(text) and "safe_account_request" not in self.state["stages_seen"]:
             self.state["stages_seen"].append("safe_account_request")
@@ -104,11 +110,28 @@ class CallSession:
         self.state["intel"].update(extract(text)["intel"])
         # Phone speech-to-text splits a number across fragments ("routing 572109." "Oh," "8-6."), sometimes
         # with "yes" or Margaret's read-back in between, so numbers are read from the recent caller fragments.
-        found = extract(self._number_window(text, ts or time.time()))
+        window = self._number_window(text, ts or time.time())
+        found = extract(window)
+        # On the phone the caller corrects themselves ("no, cut the first two"), so the clean copy of a number is
+        # Margaret's read-back. A confirmed read-back counts as if the caller had said it.
+        if self._readback and CONFIRM.match(text.lower().strip()):
+            rb = extract(self._readback)
+            found["routing"] += [r for r in rb["routing"] if r not in found["routing"]]
+            found["accounts"] += [a for a in rb["accounts"] if a not in found["accounts"]]
+            window += f" | confirmed read-back: {self._readback}"
+        self._readback = None
+        if found["routing"] or found["accounts"] or any(ch.isdigit() for ch in text):
+            self.state.setdefault("number_log", []).append(
+                {"line": text, "window": window[-200:], "routing": found["routing"], "accounts": found["accounts"]})
+        confirmed_rb = "confirmed read-back" in window
+        for r in found["routing"]:
+            if aba_valid(r):
+                events += self._bank_identified(r, confirmed_rb)
         paired = {(a["routing"], a["number"]) for a in self.state["accounts"]}
         for r in found["routing"]:
-            if not (self._pending_routing and self._pending_routing["routing"] == r):
-                self._pending_routing = {"routing": r, "turn": self._turn}
+            # Refreshed every time it's heard again, so a routing number read in chunks, repeated and confirmed
+            # still pairs with an account that arrives a few lines later.
+            self._pending_routing = {"routing": r, "turn": self._turn}
         for a in found["accounts"]:
             if any(a == n or r.startswith(a) for r, n in paired) or any(r.startswith(a) for r in found["routing"]):
                 continue  # already captured, or a routing number heard before its last digits arrived
@@ -128,6 +151,27 @@ class CallSession:
 
         self._update_strategy(pred)
         return events
+
+    def _bank_identified(self, routing: str, confirmed: bool) -> list[str]:
+        """First flag of the call: the scammer has named the bank the money should go to (a valid routing number).
+
+        Nothing is blocked yet (a block needs the account too); the console starts the flow from here.
+        Fires 'bank_found' once per routing number, and again when Margaret's read-back of it is confirmed.
+        """
+        hit = self.state.setdefault("banks_identified", [])
+        cur = next((b for b in hit if b["routing"] == routing), None)
+        if cur and (cur["confirmed"] or not confirmed):
+            return []
+        if cur:
+            cur["confirmed"] = True
+        else:
+            cur = {"routing": routing, "bank": engine.bank_name(routing), "internal": routing == BAY_FEDERAL,
+                   "confirmed": confirmed, "ts": time.time(), "scam_score": self.state["scam_score"],
+                   "stages_seen": list(self.state["stages_seen"])}
+            hit.append(cur)
+        self.state["audit"].append(engine.audit("scamwatch", "bank_identified", {
+            "routing": routing, "bank": cur["bank"], "confirmed": cur["confirmed"], "scam_score": self.state["scam_score"]}))
+        return ["bank_found"]
 
     def _number_window(self, text: str, now: float) -> str:
         """The last few caller fragments (within 30 s) joined, minus filler-only ones like "yes" or "okay".

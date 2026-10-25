@@ -43,6 +43,9 @@ def main():
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--rank", type=int, default=16)
     ap.add_argument("--max-len", type=int, default=2048)
+    ap.add_argument("--bs", type=int, default=2)
+    ap.add_argument("--accum", type=int, default=8)
+    ap.add_argument("--limit", type=int, default=None, help="use only this many conversations")
     args = ap.parse_args()
 
     tok = AutoTokenizer.from_pretrained(args.base)
@@ -50,6 +53,7 @@ def main():
         tok.pad_token = tok.eos_token
     rows = [json.loads(line) for line in open(args.data, encoding="utf-8") if line.strip()]
     random.Random(0).shuffle(rows)
+    rows = rows[: args.limit]
     data = [encode(r["messages"], tok, args.max_len) for r in rows]
     n_eval = max(40, len(data) // 20)
     train, evals = data[n_eval:], data[:n_eval]
@@ -64,14 +68,14 @@ def main():
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]))
     model.print_trainable_parameters()
 
-    bs, accum = 8, 2
+    bs, accum = args.bs, args.accum
     steps = math.ceil(len(train) / (bs * accum) * args.epochs)
     targs = TrainingArguments(
-        output_dir="/root/margaret-lora", per_device_train_batch_size=bs, per_device_eval_batch_size=bs,
+        output_dir="/root/margaret_llm/lora", per_device_train_batch_size=bs, per_device_eval_batch_size=bs,
         gradient_accumulation_steps=accum, num_train_epochs=args.epochs, learning_rate=args.lr,
-        lr_scheduler_type="cosine", warmup_ratio=0.05, bf16=True, logging_steps=10,
+        lr_scheduler_type="cosine", warmup_steps=max(1, steps // 20), bf16=True, logging_steps=10,
         eval_strategy="steps", eval_steps=max(20, steps // 6), save_strategy="no", report_to=[],
-        group_by_length=True, remove_unused_columns=False, dataloader_num_workers=2)
+        remove_unused_columns=False, dataloader_num_workers=2)
     t0 = time.time()
     trainer = Trainer(model=model, args=targs, train_dataset=train, eval_dataset=evals,
                       data_collator=DataCollatorForSeq2Seq(tok, padding=True, label_pad_token_id=-100))
