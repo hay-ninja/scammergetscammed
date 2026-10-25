@@ -80,7 +80,7 @@ def normalize(f: dict) -> dict:
         m["routing"] = _digits(m.get("routing") or m.get("rtn")) or BAY_FEDERAL
         m["bank"] = m.get("bank") or engine.bank_name(m["routing"])
         m.setdefault("recommended_action", m.get("recommendation", "provisional_block"))
-        if m.get("holder") and m["routing"] == BAY_FEDERAL:
+        if m.get("holder") and m["routing"] == BAY_FEDERAL and m["holder"] not in m["bank"]:  # idempotent: saved runs get normalized again
             m["bank"] = f"{m['bank']} · {m['holder']}"
     for group in ("additional_victims", "at_risk_members", "known_mule_payments"):
         for v in f.get(group, []):
