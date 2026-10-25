@@ -26,7 +26,7 @@ export const SCRIPTS = [
     how: "The FBI's three-phase scam ends here: a fake government agent says the bank itself is compromised and the victim must move everything to a \"protected\" federal account today.",
     tactics: ["Authority", "Fear & urgency", "Secrecy", "Safe-account ask", "Account read-out"],
     beats: [
-      "\"Mrs. Wilson, this is Agent Daniel Miller with the Federal Reserve. Your accounts were compromised by hackers overseas.\"",
+      "\"Margaret, this is Agent Daniel Miller with the Federal Reserve. Your accounts were compromised by hackers overseas.\"",
       "\"You have to act today, or you will lose everything.\"",
       "\"Do not tell your bank. Some of their employees are involved.\"",
       "If she asks: badge FR-20417, callback (415) 555-0137.",

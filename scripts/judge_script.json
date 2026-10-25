@@ -2,7 +2,7 @@
   "name": "Phantom hacker, stage 3: Federal Reserve safe account",
   "turns": [
     {"speaker": "margaret", "text": "Hello? Is this about my computer?"},
-    {"speaker": "caller", "text": "mrs wilson this is agent daniel miller with the federal reserve asset protection division"},
+    {"speaker": "caller", "text": "margaret this is agent daniel miller with the federal reserve asset protection division"},
     {"speaker": "margaret", "text": "Oh my. The Federal Reserve? Is something wrong, dear?"},
     {"speaker": "caller", "text": "your accounts were compromised by hackers in a foreign country you have to act today or you will lose everything"},
     {"speaker": "margaret", "text": "Oh dear, oh dear. What was your badge number, so I can write it down? And a number to call you back?"},
