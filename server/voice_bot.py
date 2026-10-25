@@ -210,6 +210,11 @@ class MargaretTap(FrameProcessor):
 
     async def _hang_up(self, delay: float):
         await asyncio.sleep(delay)
+        if getattr(self, "_hung_up", False):
+            return
+        self._hung_up = True
+        # When we hang up, Twilio never sends "client disconnected", so tell the dashboard the call ended here.
+        await self.dash.post("/api/sim/end")
         await self.push_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
 

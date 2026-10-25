@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS customers (
 CREATE TABLE IF NOT EXISTS accounts (
   id INTEGER PRIMARY KEY, customer_id INTEGER, routing TEXT, number TEXT,
   bank_name TEXT, status TEXT DEFAULT 'active', label TEXT DEFAULT '', balance REAL DEFAULT 0,
-  kind TEXT DEFAULT 'Checking'
+  kind TEXT DEFAULT 'Checking', nessie_id TEXT, nessie_nickname TEXT
 );
 CREATE TABLE IF NOT EXISTS transfers (
   id INTEGER PRIMARY KEY, from_account INTEGER, to_routing TEXT, to_number TEXT,
-  to_name TEXT, amount REAL, status TEXT, created_at TEXT
+  to_name TEXT, amount REAL, status TEXT, created_at TEXT, nessie_id TEXT
 );
 CREATE TABLE IF NOT EXISTS blocklist (
   id INTEGER PRIMARY KEY, routing TEXT, number TEXT, source_call_id TEXT,

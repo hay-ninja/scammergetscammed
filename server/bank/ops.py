@@ -301,7 +301,7 @@ def member_detail(cid: int) -> dict | None:
 def payments() -> list[dict]:
     blocked = _blocked_index()
     rows = _rows("SELECT t.*, c.id AS cid, c.name, c.age FROM transfers t JOIN accounts a ON a.id=t.from_account "
-                 "JOIN customers c ON c.id=a.customer_id ORDER BY t.created_at DESC")
+                 "JOIN customers c ON c.id=a.customer_id ORDER BY t.created_at DESC LIMIT 600")  # Nessie ledger: ~4k rows
     return [{"id": r["id"], "member": r["name"], "member_id": r["cid"], "age": r["age"], "amount": r["amount"], "status": r["status"],
              "memo": r["to_name"], "created_at": r["created_at"], "to": f"{engine.bank_name(r['to_routing'])} {_mask(r['to_number'])}",
              "case": (blocked.get((r["to_routing"], r["to_number"])) or {}).get("case")} for r in rows]
@@ -367,7 +367,7 @@ def simulate_new_wire(state: dict | None) -> dict | None:
     used = {r["customer_id"] for r in _rows("SELECT a.customer_id FROM transfers t JOIN accounts a ON a.id=t.from_account "
                                             "WHERE t.to_routing=? AND t.to_number=?", (b["routing"], b["number"]))}
     member = next((c for c in _rows("SELECT c.id, c.name, c.age, a.id aid FROM customers c JOIN accounts a ON a.customer_id=c.id "
-                                    "WHERE c.risk_flags='' AND c.age>=68 AND a.kind='Checking' ORDER BY c.age DESC")
+                                    "WHERE c.risk_flags IN ('', 'elderly') AND c.age>=68 AND a.kind='Checking' ORDER BY c.age DESC")
                    if c["id"] not in used), None)
     if not member:
         return None

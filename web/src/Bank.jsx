@@ -360,6 +360,77 @@ function RejectModal({ onClose, onDone }) {
   );
 }
 
+// "Phantom hacker · Federal Reserve impostor" → "phantom hacker fraud"
+const fraudType = (summary) => {
+  const t = String(summary || "").split(" · ")[0].trim();
+  return !t || /decoy call/i.test(t) ? "scam call fraud" : `${t.toLowerCase()} fraud`;
+};
+
+/** One line for the analyst ("5/5 flags · likely phantom hacker fraud"); the individual checks only on request. */
+function FlagSummary({ checks, summary, blocked = true, detailed, footnote }) {
+  const [open, setOpen] = useState(false);
+  const passed = checks.filter((c) => c.passed).length;
+  const all = checks.length > 0 && passed === checks.length;
+  return (
+    <div>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 text-left group">
+        <span className={`h-6 min-w-[44px] px-1.5 rounded-[3px] grid place-items-center text-[12px] font-bold ${all ? "bg-bf-red text-white" : "bg-bf-line text-bf-ink"}`}>{passed}/{checks.length}</span>
+        <span className="font-semibold text-bf-ink text-[clamp(13px,0.8vw,15px)] leading-snug flex-1">
+          {all ? <>flags checked · likely <span className="text-bf-red">{fraudType(summary)}</span></> : <>flags · {blocked ? "partial match" : "not enough to block"}</>}
+        </span>
+        <span className="text-[12px] text-bf-blue font-semibold whitespace-nowrap group-hover:underline">{open ? "Hide checks ▴" : "Show checks ▾"}</span>
+      </button>
+      {open && (
+        detailed ? (
+          <table className="w-full mt-2"><tbody>
+            {checks.map((w) => (
+              <tr key={w.label}>
+                <td className={`${tdc} w-8`}><b className={w.passed ? "text-bf-green" : "text-bf-red"}>{w.passed ? "✓" : "✗"}</b></td>
+                <td className={`${tdc} font-semibold w-64`}>{w.label}</td>
+                <td className={`${tdc} text-bf-sub`}>{w.data}</td>
+              </tr>
+            ))}
+          </tbody></table>
+        ) : (
+          <ul className="mt-1.5 ml-1 space-y-0.5 text-[clamp(12px,0.72vw,14px)]">
+            {checks.map((w) => <li key={w.label} className="text-bf-ink"><b className={w.passed ? "text-bf-green" : "text-bf-red"}>{w.passed ? "✓" : "✗"}</b> {w.label}</li>)}
+          </ul>
+        )
+      )}
+      {open && footnote && <div className="text-[12.5px] text-bf-sub mt-2">{footnote}</div>}
+    </div>
+  );
+}
+
+/** What approving the freeze locks in, in member terms. */
+function FreezeImpact({ s, inv, compact }) {
+  const imp = s?.impact;
+  if (!imp) return null;
+  const people = [...imp.holds, ...imp.lookback];
+  const members = [...new Map(people.map((p) => [p.customer, p])).values()];
+  const ages = members.map((m) => m.age).filter(Boolean);
+  const held = imp.holds.reduce((t, h) => t + h.amount, 0);
+  const recall = imp.lookback.reduce((t, h) => t + h.amount, 0);
+  const internal = (s.accounts || []).filter((a) => a.status === "blocked" && a.result?.internal);
+  const ring = inv?.status === "completed" ? inv.findings?.totals?.stoppable_pending_usd || 0 : 0;
+  const decided = imp.freeze_approved || imp.freeze_rejected;
+  const who = (list) => [...new Map(list.map((p) => [p.customer, p])).values()].map((p) => `${p.customer.split(" ")[0]}, ${p.age}`).join(" · ");
+  return (
+    <div className="mt-2 rounded-[4px] bg-[#E3FCEF] border border-[#ABF5D1] px-3 py-2">
+      <div className="text-[clamp(13px,0.85vw,16px)] text-bf-ink leading-snug">
+        <b>{imp.freeze_approved ? "Locked in" : "Approving locks in"} <span className="text-bf-green">{money(imp.protected_total)}</span></b>
+        {members.length > 0 && <> for {members.length} member{members.length > 1 ? "s" : ""}{ages.length ? ` aged ${Math.min(...ages)}–${Math.max(...ages)}` : ""}</>}
+      </div>
+      <ul className={`mt-1 space-y-0.5 text-[clamp(12px,0.72vw,14px)] text-bf-ink ${compact ? "" : ""}`}>
+        {held > 0 && <li><b className="text-bf-green">{money(held)}</b> wire stays with {who(imp.holds)}</li>}
+        {recall > 0 && <li><b className="text-bf-blue">{money(recall)}</b> recall for {who(imp.lookback)}</li>}
+        {internal.length > 0 && <li>Mule {internal.map((a) => `••${a.number.slice(-4)}`).join(", ")} frozen: no other senior can wire it</li>}
+        {ring > 0 && !decided && <li>Investigator: <b>{money(ring)}</b> more is still stoppable in the ring</li>}
+      </ul>
+    </div>
+  );
+}
+
 function Decision({ s, caseKey, detail, toast, compact, data }) {
   const [rejecting, setRejecting] = useState(false);
   const blocked = (s?.accounts || []).filter((a) => a.status === "blocked");
@@ -368,6 +439,7 @@ function Decision({ s, caseKey, detail, toast, compact, data }) {
   const internal = blocked.filter((a) => a.result?.internal);
   const disc = detail?.accounts?.find((a) => a.discrepancy)?.discrepancy;
   const approve = () => post("/api/approve").then(() => toast("Freeze approved. Provisional blocks confirmed and audited.")).catch((e) => toast(e.message, true));
+  const checks = Object.entries(blocked[0].gate || {}).map(([k, ok]) => ({ label: gateLabel(k, data), passed: ok }));
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2">
@@ -377,10 +449,11 @@ function Decision({ s, caseKey, detail, toast, compact, data }) {
       <div className="font-bold text-bf-ink text-[clamp(14px,0.9vw,17px)] mt-1 leading-snug">
         Confirm {blocked.length} provisional block{blocked.length > 1 ? "s" : ""}{internal.length ? ` and freeze ${internal.map((a) => `••${a.number.slice(-4)}`).join(", ")} at CalHacks Federal` : ""}
       </div>
-      <ul className={`mt-2 space-y-0.5 text-[clamp(12px,0.72vw,14px)] ${compact ? "" : "flex-1 min-h-0 overflow-y-auto"}`}>
-        {Object.keys(blocked[0].gate || {}).map((k) => <li key={k} className="text-bf-ink"><b className="text-bf-green">✓</b> {gateLabel(k, data)}</li>)}
-        {disc && <li className="text-bf-ink mt-1 rounded-[3px] bg-[#FFFAE6] px-2 py-1"><b className="text-[#974F0C]">Sources disagree:</b> memo says {disc.claimed}; routing resolves to a private {disc.facts[0].says.split("a private ")[1]}</li>}
-      </ul>
+      <div className={`mt-2 ${compact ? "" : "flex-1 min-h-0 overflow-y-auto scroll-thin pr-1"}`}>
+        <FlagSummary checks={checks} summary={detail?.summary} />
+        {disc && <div className="text-[clamp(12px,0.72vw,14px)] text-bf-ink mt-1.5 rounded-[3px] bg-[#FFFAE6] px-2 py-1"><b className="text-[#974F0C]">Sources disagree:</b> memo says {disc.claimed}; routing resolves to a private {disc.facts[0].says.split("a private ")[1]}</div>}
+        <FreezeImpact s={s} inv={s?.investigation} compact={compact} />
+      </div>
       <div className="mt-3">
         {imp.freeze_approved ? <div className="text-bf-green font-bold text-[15px]">✓ Approved by {ANALYST}</div>
           : imp.freeze_rejected ? <div className="text-[#BF2600] text-[14px]"><b>Rejected by {ANALYST}:</b> “{imp.reject_reason}”</div>
@@ -486,7 +559,7 @@ function MuleRow({ m, approved, toast, compact }) {
     <div className={`flex items-start gap-2 ${compact ? "py-1.5" : "py-2.5"} border-b border-bf-line last:border-b-0`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-semibold text-bf-ink text-[clamp(12px,0.75vw,14px)]">{m.bank} {mask(m.number)}</span>
+          <span className="font-semibold text-bf-ink text-[clamp(12px,0.75vw,14px)]">{[...new Set(String(m.bank || "").split(" · "))].join(" · ")} {mask(m.number)}</span>
           <span className="font-mono text-[11px] text-bf-sub">{m.routing}/{m.number}</span>
           {m.confidence && <span className={`rounded-[3px] px-1 text-[10.5px] font-bold uppercase ${m.confidence === "high" ? "bg-[#FFEBE6] text-[#BF2600]" : "bg-[#FFFAE6] text-[#974F0C]"}`}>{m.confidence}</span>}
           {approved && <Lozenge s="BLOCKED" />}
@@ -510,10 +583,16 @@ function InvFindings({ inv, toast, compact }) {
   const past = victims.filter((v) => v.status !== "pending");
   const atRisk = (f.at_risk_members || []).filter((r) => !pending.some((v) => v.member === r.member));
   const h3 = "text-[11px] font-bold uppercase tracking-wide text-bf-sub mt-3 mb-1";
+  const [logic, setLogic] = useState(false);
+  const nPending = new Set([...pending, ...atRisk].map((v) => v.member)).size;
+  const nPast = new Set(past.map((v) => v.member)).size;
+  const ages = victims.map((v) => v.age).filter(Boolean);
+  const stoppable = tot.stoppable_pending_usd ?? pending.reduce((t, v) => t + v.amount, 0);
+  const recallable = tot.recall_candidates_usd ?? past.reduce((t, v) => t + v.amount, 0);
   const vrow = (v, i) => (
     <div key={v.txn_id || i} className="flex items-center gap-2 py-1 border-b border-bf-line last:border-b-0 text-[clamp(12px,0.75vw,14px)]">
       <span className="font-semibold text-bf-ink truncate">{v.member}</span><span className="text-bf-sub">· {v.age}</span>
-      {!compact && <span className="text-bf-sub text-[12px] truncate">→ {v.to}</span>}
+      {!compact && v.to && <span className="text-bf-sub text-[12px] truncate">→ {v.to}</span>}
       <span className="ml-auto text-bf-sub text-[12px] whitespace-nowrap">{v.date}</span>
       <span className="font-semibold tabular-nums w-[72px] text-right">{money(v.amount)}</span>
       <span className="w-[118px] text-right">{v.status === "pending" ? <Lozenge s="PENDING REVIEW" /> : <span className="inline-block rounded-[3px] px-1.5 py-[1px] text-[11px] font-bold uppercase bg-[#DEEBFF] text-bf-blue whitespace-nowrap">Recall candidate</span>}</span>
@@ -521,15 +600,28 @@ function InvFindings({ inv, toast, compact }) {
   );
   return (
     <div>
-      {f.summary && <div className={`rounded-[4px] bg-[#EAE6FF]/60 px-3 py-2 text-bf-ink leading-snug ${compact ? "text-[13px]" : "text-[15px]"}`}>{f.summary}</div>}
+      <div className={`text-bf-ink leading-snug ${compact ? "text-[13px]" : "text-[15px]"}`}>
+        Found <b>{(f.linked_mule_accounts || []).length} more mule account{(f.linked_mule_accounts || []).length === 1 ? "" : "s"}</b> and{" "}
+        <b>{new Set(victims.map((v) => v.member)).size} more victim{new Set(victims.map((v) => v.member)).size === 1 ? "" : "s"}</b>{ages.length ? ` aged ${Math.min(...ages)}–${Math.max(...ages)}` : ""}.
+        {" "}Approve each block below to stop their money moving.
+      </div>
       <div className="grid grid-cols-3 gap-2 mt-2">
-        {[["Exposed", tot.exposed_usd, "text-bf-red"], ["Stoppable (pending)", tot.stoppable_pending_usd, "text-bf-green"], ["Recall candidates", tot.recall_candidates_usd, "text-bf-blue"]].map(([l, v, c]) => (
-          <div key={l} className="rounded-[3px] bg-bf-bg px-2 py-1.5">
-            <div className={`font-bold tabular-nums leading-none ${compact ? "text-[clamp(15px,1vw,19px)]" : "text-[22px]"} ${c}`}>{money(v)}</div>
-            <div className="text-[11px] text-bf-sub mt-0.5 truncate">{l}</div>
+        {[["Still stoppable today", stoppable, "text-bf-green", `pending wires from ${nPending} member${nPending === 1 ? "" : "s"}`],
+          ["Can be recalled", recallable, "text-bf-blue", `already sent by ${nPast} member${nPast === 1 ? "" : "s"}`],
+          ["Total at risk", tot.exposed_usd ?? stoppable + recallable, "text-bf-red", "across the whole ring"]].map(([l, v, c, sub]) => (
+          <div key={l} className="rounded-[3px] bg-bf-bg px-2 py-1.5 min-w-0">
+            <div className="text-[11px] font-bold text-bf-ink truncate">{l}</div>
+            <div className={`font-bold tabular-nums leading-none mt-0.5 ${compact ? "text-[clamp(15px,1vw,19px)]" : "text-[22px]"} ${c}`}>{money(v)}</div>
+            <div className="text-[11px] text-bf-sub mt-0.5 truncate">{sub}</div>
           </div>
         ))}
       </div>
+      {f.summary && (
+        <div className="mt-1.5">
+          <button onClick={() => setLogic(!logic)} className="text-[12px] text-bf-blue font-semibold hover:underline">{logic ? "Hide model logic ▴" : "View model logic ▾"}</button>
+          {logic && <div className={`mt-1 rounded-[4px] bg-[#EAE6FF]/60 px-3 py-2 text-bf-ink leading-snug ${compact ? "text-[12.5px]" : "text-[14px]"}`}>{f.summary}</div>}
+        </div>
+      )}
       <div className={h3}>Other mule accounts in the ring · {(f.linked_mule_accounts || []).length}</div>
       {(f.linked_mule_accounts || []).map((m) => <MuleRow key={m.routing + m.number} m={m} approved={approved.has(`${m.routing}/${m.number}`)} toast={toast} compact={compact} />)}
       {(f.linked_mule_accounts || []).length === 0 && <div className="text-[13px] text-bf-sub">No other mule accounts found.</div>}
@@ -542,7 +634,7 @@ function InvFindings({ inv, toast, compact }) {
         <>
           <div className={h3}>Victims and amounts · {victims.length}</div>
           {victims.map(vrow)}
-          <div className={h3}>Pending payments to hold · {money(pending.reduce((t, v) => t + v.amount, 0))}</div>
+          <div className={h3}>Pending payments to hold · {money(stoppable)}</div>
           {pending.length === 0 && atRisk.length === 0 && <div className="text-[13px] text-bf-sub">None.</div>}
           {pending.map(vrow)}
           {atRisk.map((r, i) => <div key={i} className="text-[13.5px] py-1 border-b border-bf-line"><b>{r.member}</b> <span className="text-bf-sub">· {r.age} · {r.signal}</span></div>)}
@@ -851,21 +943,13 @@ function CaseDetail({ data, id, toast }) {
       <div className="grid grid-cols-12 gap-4 items-start">
         <div className="col-span-8 space-y-4">
           {c.live && (
-            <Section title="Why?" right={<span className="text-xs text-bf-sub">Every gate check, with the data behind it</span>}>
-              <div className={`rounded-[4px] px-4 py-3 text-[15px] mb-3 ${c.accounts.some((a) => a.status === "blocked") ? "bg-[#E3FCEF] text-bf-ink" : "bg-[#DEEBFF] text-bf-ink"}`}>{c.verdict}</div>
+            <Section title="Why it was flagged">
+              {c.accounts.length === 0 && <div className="text-[14px] text-bf-sub">No account number was read out on this call, so nothing was checked or blocked.</div>}
               {c.accounts.map((a) => (
                 <div key={a.number} className="mb-3 last:mb-0">
-                  <div className="flex items-center gap-2 mb-1"><span className="font-mono font-bold">{a.bank} ••{a.number.slice(-4)}</span>
+                  <div className="flex items-center gap-2 mb-1.5"><span className="font-mono font-bold">{a.bank} ••{a.number.slice(-4)}</span>
                     <Lozenge s={a.status === "blocked" ? "BLOCKED" : "NO ACTION"} /></div>
-                  <table className="w-full"><tbody>
-                    {a.why.map((w) => (
-                      <tr key={w.check}>
-                        <td className={`${tdc} w-8`}><b className={w.passed ? "text-bf-green" : "text-bf-red"}>{w.passed ? "✓" : "✗"}</b></td>
-                        <td className={`${tdc} font-semibold w-64`}>{w.label}</td>
-                        <td className={`${tdc} text-bf-sub`}>{w.data}</td>
-                      </tr>
-                    ))}
-                  </tbody></table>
+                  <FlagSummary detailed checks={a.why} summary={c.summary} blocked={a.status === "blocked"} footnote={c.verdict} />
                 </div>
               ))}
             </Section>

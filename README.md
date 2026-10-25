@@ -55,11 +55,25 @@ The server loads the best model it finds: `training/models/finetuned_onnx/` (fin
 
 Claude plays 30 scammers (5 scams × 6 tactics: standard, calm, aggressive, "are you a bot?", prompt injection, data grab) and 10 real callers. Margaret answers with the live prompt, model and coaching notes, MargaretSGS watches every line, and Claude grades each transcript. Reports minutes wasted, accounts extracted and blocked, leaks, character breaks, false blocks and Gemini first-token latency. Uses a scratch copy of `bank.db`.
 
+## CalHacks Federal's core banking runs on Capital One Nessie
+
+The bank's 295 members, 447 checking and savings accounts and ~10,700 transactions (90 days of payroll,
+Social Security, bills, card purchases, member transfers, and the scam wires) live in our Nessie sandbox.
+
+- `scripts/seed_nessie.py` loads the ledger into Nessie, including a hidden mule ring and legitimate lookalikes.
+- `python -m server.bank.nessie` pulls Nessie's customers, accounts, withdrawals and transfers into
+  `server/bank/data/nessie_snapshot.json`. Every demo reset rebuilds the console's ledger from it, so the
+  members, payments, holds and recalls on screen are Nessie's records (and resets stay instant if Nessie is slow).
+- **Write-back:** when MargaretSGS holds or an analyst freezes a CalHacks Federal mule account, the account is
+  flagged `HELD_REVIEW` / `FROZEN` in Nessie (`PUT /accounts/{id}`). Nessie doesn't allow editing withdrawals,
+  so payment holds are recorded on our side. A reset clears the flags.
+- The **MargaretSGS Investigator** (CREAO) reads the same ledger live from Nessie's API to find the ring behind a block.
+
 ## What's real and what's simulated
 
 | Real | Simulated |
 |---|---|
-| Phone call, speech recognition, Margaret's voice and replies | CalHacks Federal's ledger and members |
+| Phone call, speech recognition, Margaret's voice and replies | CalHacks Federal's members and payments (synthetic, but hosted in Capital One's Nessie API) |
 | Trained classifier and its held-out evaluation | The scammer (a judge with a script card) |
 | Number extraction, routing checksum, gate, holds, lookback, audit log | Training calls (synthetic, modeled on FBI/FTC scam patterns) |
 | | Notifying the receiving bank |

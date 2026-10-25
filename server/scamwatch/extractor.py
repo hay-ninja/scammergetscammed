@@ -80,6 +80,11 @@ def extract(text: str) -> dict:
     out = {"routing": [], "accounts": [], "intel": {}}
     for run in digit_runs(text):
         d, before = run["digits"], run["before"]
+        if 15 <= len(d) <= 21 and "badge" not in before:
+            # A routing number and an account read back in one breath ("five seven two ... two eight seven").
+            out["routing"].append(d[:9])  # kept even with a bad checksum, so the gate can show the ✗
+            out["accounts"].append(d[9:])
+            continue
         if "badge" in before or "id" in before.split():
             out["intel"]["badge"] = d
         elif any(w in before for w in PHONE_WORDS) or len(d) in (7, 10, 11):

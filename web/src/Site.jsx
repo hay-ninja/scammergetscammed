@@ -511,19 +511,7 @@ export function Landing() {
         </Section>
       </section>
 
-      <Section label="the stack" title="Built with.">
-        <div className="grid grid-cols-4 gap-x-6">
-          {[["Cartesia", "Margaret's voice (Sonic TTS) and the caller's speech-to-text"], ["Google Gemini", "Margaret's brain: what she says next"],
-            ["StepFun", "Automatic failover brain if Gemini rate-limits mid-call"], ["Vultr", "GPU fine-tuning of MargaretSGS, and hosting"],
-            ["Anthropic Claude", "Synthetic training calls, red-team scammers and the benchmark judge"], ["Twilio", "The phone number and media stream"],
-            ["Pipecat", "Real-time voice pipeline"], ["ModernBERT + ONNX", "Our scam-stage classifier, int8 on CPU"]].map(([t, d]) => (
-            <div key={t} className="border-t border-fl-line py-5 group">
-              <div className="flex items-center gap-2 font-fmono text-[12px] text-fl-ink lowercase"><span className="h-[5px] w-[5px] bg-fl-tick group-hover:bg-wm-500 transition" />{t}</div>
-              <div className="text-[14px] text-fl-body mt-1.5 leading-snug">{d}</div>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <BuiltWith />
 
       <section className="max-w-6xl mx-auto px-6 pb-16">
         <div className="relative overflow-hidden rounded-[24px] border border-wm-100 px-12 py-14 flex items-center gap-8"
@@ -567,6 +555,182 @@ function Impact() {
         <div className="col-span-2 text-[13px] text-fl-mute">Uses the IC3 2024 average loss of $33,200 per victim aged 60+.</div>
       </div>
     </Card>
+  );
+}
+
+// ---------- infrastructure: where it runs ----------
+
+const ZONE = {
+  ours: { box: "bg-wm-50 border-wm-200", bar: "bg-wm-500", name: "Our code" },
+  rent: { box: "bg-[#F3F0FF] border-[#D6CCFA]", bar: "bg-[#6554C0]", name: "Rented service" },
+  people: { box: "bg-fl-sink border-fl-line", bar: "bg-fl-tick", name: "People & devices" },
+};
+
+const IBox = ({ z, title, line, className = "" }) => (
+  <div className={`relative rounded-[12px] border ${ZONE[z].box} pl-4 pr-3 py-2.5 ${className}`}>
+    <span className={`absolute left-0 top-2.5 bottom-2.5 w-[4px] rounded-r-full ${ZONE[z].bar}`} />
+    <div className="text-[19px] font-medium tracking-title leading-tight text-fl-ink">{title}</div>
+    <div className="text-[16px] text-fl-body leading-snug">{line}</div>
+  </div>
+);
+
+// Arrow in a gap cell. dir: "r" | "l" | "lr" | "d" | "u" | "ud".
+const Link = ({ dir = "r", label, className = "" }) => {
+  const v = dir === "d" || dir === "u" || dir === "ud";
+  const glyph = { r: "→", l: "←", lr: "⇄", d: "↓", u: "↑", ud: "⇅" }[dir];
+  return (
+    <div className={`flex ${v ? "flex-row gap-2 justify-center" : "flex-col justify-center"} items-center text-wm-500 ${className}`}>
+      <span className="text-[22px] leading-none" aria-hidden="true">{glyph}</span>
+      {label && <span className="font-fmono text-[12px] text-fl-body text-center leading-tight">{label}</span>}
+    </div>
+  );
+};
+
+function Infrastructure() {
+  // One SVG so the connector lines stay attached to the boxes at any width.
+  const C = {
+    ours: { fill: "#FFF1E6", stroke: "#F7B785", title: "#1A1A1A", sub: "#B04E12" },
+    rent: { fill: "#F1EEFF", stroke: "#C9BEF5", title: "#1A1A1A", sub: "#5243AA" },
+    people: { fill: "#F2F2F2", stroke: "#D4D4D4", title: "#1A1A1A", sub: "#555555" },
+  };
+  const Box = ({ x, y, w = 260, h = 78, z, t, s }) => (
+    <g>
+      <rect x={x} y={y} width={w} height={h} rx="12" fill={C[z].fill} stroke={C[z].stroke} strokeWidth="1.5" />
+      <text x={x + w / 2} y={y + 33} textAnchor="middle" fontSize="21" fontWeight="500" fill={C[z].title} fontFamily="Instrument Sans, system-ui">{t}</text>
+      <text x={x + w / 2} y={y + 58} textAnchor="middle" fontSize="16" fill={C[z].sub} fontFamily="Instrument Sans, system-ui">{s}</text>
+    </g>
+  );
+  const Line = ({ d, both, label, lx, ly, anchor = "start" }) => (
+    <g>
+      <path d={d} fill="none" stroke="#8A8A8A" strokeWidth="1.8" markerEnd="url(#arr)" markerStart={both ? "url(#arr)" : undefined} />
+      {label && <text x={lx} y={ly} textAnchor={anchor} fontSize="13" fill="#555555" fontFamily="Geist Mono, monospace">{label}</text>}
+    </g>
+  );
+  return (
+    <div className="mt-16">
+      <div className="flex items-end justify-between gap-8 flex-wrap">
+        <div>
+          <Label>infrastructure</Label>
+          <h2 className="text-[40px] font-medium tracking-display leading-[1.05] text-fl-ink mt-3">Where it runs.</h2>
+          <div className="text-[17px] text-fl-body mt-1">What is our code, what is rented, and what happened before the demo.</div>
+        </div>
+        <div className="flex items-center gap-6">
+          {[["ours", "Our code"], ["rent", "Rented service"], ["people", "People & devices"]].map(([k, n]) => (
+            <span key={k} className="flex items-center gap-2 text-[15px] text-fl-ink">
+              <span className="h-4 w-4 rounded-[4px] border-[1.5px]" style={{ background: C[k].fill, borderColor: C[k].stroke }} />{n}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="mt-6 rounded-[20px] border border-fl-line bg-white p-4">
+        <svg viewBox="0 0 1120 780" style={{ maxHeight: "78vh" }} className="w-full h-auto" role="img" aria-label="Infrastructure diagram">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#8A8A8A" />
+            </marker>
+          </defs>
+
+          {/* our server */}
+          <rect x="300" y="20" width="460" height="520" rx="20" fill="#FFFBF7" stroke="#F7954A" strokeWidth="2" strokeDasharray="7 6" />
+          <text x="324" y="50" fontSize="15" fill="#B04E12" fontFamily="Geist Mono, monospace" letterSpacing="1.5">OUR SERVER · PYTHON · ON VULTR</text>
+
+          <Box x={40} y={40} w={210} z="people" t="Scammer" s="Any phone" />
+          <Box x={40} y={170} w={210} z="rent" t="Twilio" s="Phone line" />
+          <Box x={40} y={402} w={210} z="people" t="Dashboard" s="Analyst, projector" />
+
+          <Box x={330} y={80} w={400} z="ours" t="Voice bot" s="Pipecat, runs the call" />
+          <Box x={330} y={250} w={400} z="ours" t="MargaretSGS" s="Our model, rules, gate" />
+          <Box x={330} y={402} w={400} z="ours" t="Bank engine" s="SQLite ledger, audit log" />
+
+          <Box x={830} y={50} w={250} z="rent" t="Cartesia" s="Ears and voice" />
+          <Box x={830} y={170} w={250} z="rent" t="Gemini / StepFun" s="Margaret's words" />
+          <Box x={830} y={402} w={250} z="rent" t="CREAO agent" s="Finds the ring" />
+
+          {/* links */}
+          <Line d="M145,118 L145,170" both />
+          <Line d="M250,209 L280,209 L280,119 L330,119" both label="audio" lx={258} ly={108} />
+          <Line d="M730,100 L830,89" both />
+          <Line d="M730,135 L780,135 L780,209 L830,209" both />
+          <Line d="M530,158 L530,250" both label="caller line ↓" lx={546} ly={198} />
+          <text x={546} y={220} fontSize="13" fill="#555555" fontFamily="Geist Mono, monospace">coaching note ↑</text>
+          <Line d="M530,328 L530,402" label="gate passes" lx={546} ly={370} />
+          <Line d="M250,441 L330,441" both />
+          <Line d="M730,441 L830,441" both label="case" lx={780} ly={426} anchor="middle" />
+
+          {/* training */}
+          <rect x="20" y="590" width="1080" height="170" rx="20" fill="#FAFAFA" stroke="#BDBDBD" strokeWidth="2" strokeDasharray="7 6" />
+          <text x="44" y="620" fontSize="15" fill="#555555" fontFamily="Geist Mono, monospace" letterSpacing="1.5">BEFORE THE DEMO: TRAINING</text>
+          <Box x={60} y={645} w={290} h={82} z="rent" t="Claude" s="Writes practice calls" />
+          <Box x={420} y={645} w={290} h={82} z="rent" t="Vultr GPU" s="Fine-tunes ModernBERT" />
+          <Box x={780} y={645} w={290} h={82} z="ours" t="Model file" s="int8 ONNX, runs on CPU" />
+          <Line d="M350,686 L420,686" label="~3,000 calls" lx={385} ly={676} anchor="middle" />
+          <Line d="M710,686 L780,686" />
+          <Line d="M925,645 L925,566 L680,566 L680,540" label="deployed to the server" lx={940} ly={585} />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ---------- built with: three groups ----------
+
+const SERVICES = [
+  ["Twilio", "phone number + media stream"],
+  ["Cartesia", "speech-to-text + Sonic voice"],
+  ["Google Gemini", "Margaret's brain"],
+  ["StepFun", "backup brain if Gemini fails"],
+  ["CREAO", "investigator agent, writes the SAR"],
+  ["Anthropic Claude", "training calls, red-team scammers, benchmark judge"],
+  ["Vultr", "GPU fine-tuning + hosting"],
+  ["Capital One Nessie", "second ledger backend (seed script)"],
+];
+const OPEN_SOURCE = ["Pipecat · real-time voice pipeline", "Silero VAD", "FastAPI + Uvicorn", "WebSockets", "SQLite",
+  "scikit-learn · TF-IDF baseline", "ModernBERT", "ONNX Runtime · int8", "Hugging Face tokenizers", "React 18", "Vite", "Tailwind"];
+const OURS = [
+  ["MargaretSGS classifier", "Fine-tuned on synthetic calls, labels 10 scam stages."],
+  ["Number extractor", "Spoken digits → routing and account numbers, ABA checksum."],
+  ["Rules + 5-check gate", "No LLM can trigger a block."],
+  ["Bank engine", "Blocklist, holds, 30-day lookback, audit log."],
+  ["Training + eval pipeline", "Data generation, hard negatives, held-out set, benchmark."],
+  ["Live dashboard", "Margaret Live and the CalHacks Federal Fraud Ops console."],
+];
+
+function BuiltWith() {
+  return (
+    <Section label="the stack" title="Built with.">
+      <div className="space-y-10">
+        <div>
+          <div className="flex items-baseline gap-3"><span className="font-fmono text-[13px] text-wm-600">A</span><h3 className="text-[22px] font-medium tracking-title">Services we call</h3></div>
+          <div className="grid grid-cols-4 gap-3 mt-4">
+            {SERVICES.map(([n, d]) => (
+              <div key={n} className="rounded-[14px] border border-[#D6CCFA] bg-[#F3F0FF] px-4 py-3.5">
+                <div className="text-[22px] font-medium tracking-title text-fl-ink leading-tight">{n}</div>
+                <div className="text-[15px] text-fl-body mt-1 leading-snug">{d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="flex items-baseline gap-3"><span className="font-fmono text-[13px] text-wm-600">B</span><h3 className="text-[22px] font-medium tracking-title">Open source we build on</h3></div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {OPEN_SOURCE.map((t) => <span key={t} className="rounded-full bg-fl-sink px-3 py-1 font-fmono text-[13px] text-fl-body">{t}</span>)}
+          </div>
+        </div>
+        <div className="rounded-[20px] border-2 border-wm-200 bg-wm-50/60 p-6">
+          <div className="flex items-baseline gap-3"><span className="font-fmono text-[13px] text-wm-600">C</span><h3 className="text-[28px] font-medium tracking-title">What we wrote</h3>
+            <span className="font-fmono text-[12px] text-wm-700">the part that decides</span></div>
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            {OURS.map(([t, d]) => (
+              <div key={t} className="relative rounded-[14px] bg-white border border-wm-200 pl-5 pr-4 py-4 shadow-[0_10px_30px_-18px_rgba(238,122,42,0.45)]">
+                <span className="absolute left-0 top-4 bottom-4 w-[4px] rounded-r-full bg-wm-500" />
+                <div className="text-[20px] font-medium tracking-title text-fl-ink leading-tight">{t}</div>
+                <div className="text-[16px] text-fl-body mt-1.5 leading-snug">{d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Section>
   );
 }
 
@@ -614,14 +778,19 @@ const Down = ({ label }) => (
   </div>
 );
 
+const BAND = {
+  talk: { box: "bg-[#FDEDEA] border-[#F5C2B8]", word: "text-fl-red", n: "text-fl-red-ink" },
+  decide: { box: "bg-wm-50 border-wm-200", word: "text-wm-600", n: "text-wm-700" },
+  act: { box: "bg-fl-green-pale/60 border-[#B5E2CB]", word: "text-fl-green", n: "text-fl-green" },
+};
 const Band = ({ n, word, q, children }) => (
-  <div className="flex flex-col min-w-0">
-    <div className="mb-3">
+  <div className={`flex flex-col min-w-0 rounded-[20px] border ${BAND[word].box} p-4`}>
+    <div className="mb-4 px-1">
       <div className="flex items-baseline gap-3">
-        <span className="font-fmono text-[13px] text-wm-600">0{n}</span>
-        <span className="font-fmono text-[15px] uppercase tracking-[0.18em] text-fl-ink">{word}</span>
+        <span className={`font-fmono text-[13px] ${BAND[word].n}`}>0{n}</span>
+        <span className={`font-fmono text-[18px] font-semibold uppercase tracking-[0.16em] leading-none ${BAND[word].word}`}>{word}</span>
       </div>
-      <div className="text-[26px] font-medium tracking-title leading-tight text-fl-ink mt-0.5">{q}</div>
+      <div className="text-[26px] font-medium tracking-title leading-tight text-fl-ink mt-1">{q}</div>
     </div>
     {children}
   </div>
@@ -655,31 +824,61 @@ function Legend() {
 }
 
 function Trace({ score }) {
+  // The demo flow in one sentence: one caller line walking TALK → DECIDE → ACT, with the active step lit.
   const steps = [
-    ["caller", "“Move your savings to this safe account, routing 5-7-2…”", "pipe"],
-    ["margaret", "“Oh my. Let me get a pen.”", "llm"],
-    ["model", "safe_account_request · 0.97", "decide"],
-    ["gate", "5 / 5 checks ✓", "decide"],
-    ["bank", "$8,500 wire HELD", "act"],
-    ["analyst", "freeze approved", "act"],
+    ["talk", "caller", "The scammer says", "“Move your savings to this safe account, routing 5-7-2…”"],
+    ["talk", "margaret", "Margaret plays along", "“Oh my. Let me get a pen.”"],
+    ["decide", "model", "Our model labels it", "Asking for a safe account · 97% sure"],
+    ["decide", "gate", "The gate checks", "5 of 5 checks pass ✓"],
+    ["act", "bank", "The bank acts", "$8,500 wire held"],
+    ["act", "analyst", "A human signs off", "Freeze approved"],
   ];
+  const TONE = {
+    talk: { box: "bg-[#FDEDEA] border-[#F5C2B8]", on: "ring-fl-red", tag: "bg-fl-red", word: "text-fl-red" },
+    decide: { box: "bg-wm-50 border-wm-200", on: "ring-wm-500", tag: "bg-wm-500", word: "text-wm-600" },
+    act: { box: "bg-fl-green-pale/70 border-[#B5E2CB]", on: "ring-fl-green", tag: "bg-fl-green", word: "text-fl-green" },
+  };
+  const [at, setAt] = useState(reducedMotion() ? -1 : 0);
+  useEffect(() => {
+    if (reducedMotion()) return;
+    const t = setInterval(() => setAt((i) => (i + 1) % (steps.length + 2)), 1400);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div className="mt-5 rounded-[16px] border border-fl-line bg-white px-5 py-4">
-      <div className="flex items-center gap-2.5 font-fmono text-[12px] uppercase tracking-[0.14em] text-wm-600">
-        <span className="h-[6px] w-[6px] bg-wm-500" />follow one sentence
+    <div className="mt-6 rounded-[24px] border-2 border-wm-200 bg-white px-7 py-6 shadow-[0_24px_60px_-34px_rgba(238,122,42,0.55)]">
+      <div className="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <Label>the demo flow</Label>
+          <div className="text-[32px] font-medium tracking-display leading-tight text-fl-ink mt-2">Follow one sentence through the system.</div>
+        </div>
+        <div className="flex items-center gap-2">
+          {["talk", "decide", "act"].map((k) => (
+            <span key={k} className={`rounded-full px-3 py-1 text-white text-[13px] font-semibold uppercase tracking-wide ${TONE[k].tag}`}>{k}</span>
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-[repeat(11,auto)] items-center gap-x-2 mt-3">
-        {steps.map(([who, what, power], i) => (
-          <React.Fragment key={who}>
-            {i > 0 && <span className="text-wm-500 text-[20px]" aria-hidden="true">→</span>}
-            <div className={`rounded-[12px] px-3 py-2 ${POWER[power].soft} border ${POWER[power].ring}`}>
-              <div className={`font-fmono text-[11px] uppercase tracking-wide ${POWER[power].text}`}>{who}</div>
-              <div className={`text-[16px] leading-snug text-fl-ink ${i === 0 ? "max-w-[300px]" : "whitespace-nowrap"}`}>{what}</div>
-            </div>
-          </React.Fragment>
-        ))}
+      <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-x-2 mt-5">
+        {steps.map(([band, who, verb, what], i) => {
+          const on = at === i || at >= steps.length;
+          return (
+            <React.Fragment key={who}>
+              {i > 0 && <span className={`self-center text-[26px] transition-colors duration-300 ${at >= i ? "text-wm-500" : "text-fl-tick"}`} aria-hidden="true">→</span>}
+              <div className={`rounded-[16px] border ${TONE[band].box} px-4 py-3 flex flex-col transition-all duration-300 ${on ? `ring-2 ${TONE[band].on} -translate-y-1 shadow-[0_10px_24px_-12px_rgba(26,26,26,0.35)]` : at >= 0 && at < i ? "opacity-60" : ""}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`h-6 w-6 rounded-full grid place-items-center text-white font-fmono text-[12px] ${TONE[band].tag}`}>{i + 1}</span>
+                  <span className={`font-fmono text-[12px] uppercase tracking-wide ${TONE[band].word}`}>{who}</span>
+                </div>
+                <div className="text-[15px] text-fl-body mt-2">{verb}</div>
+                <div className="text-[19px] font-medium tracking-title leading-snug text-fl-ink mt-0.5">{what}</div>
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
-      <div className="text-[14px] text-fl-body mt-2">Illustrative, from the judge script. The block line is {score.toFixed(2)}.</div>
+      <div className="flex items-center justify-between mt-4 text-[14px] text-fl-body">
+        <span>This is exactly what you'll see live: <b className="text-fl-ink font-medium">Margaret Live</b> (steps 1–4), then <b className="text-fl-ink font-medium">CalHacks Federal</b> (steps 5–6).</span>
+        <span className="font-fmono text-[12px]">illustrative, from the judge script · block line {score.toFixed(2)}</span>
+      </div>
     </div>
   );
 }
@@ -704,14 +903,19 @@ export function Architecture() {
         <Band n={1} word="talk" q="Keep the scammer talking">
           <Node power="pipe" title="Hears the scammer" line="The call comes in; speech becomes text, word by word."
             chips={["Twilio", "Cartesia STT", "8 kHz", "VAD 1.0 s"]} />
-          <div className="relative h-14">
+          <div className="relative h-[76px]">
             <div className="absolute left-6 top-0 bottom-0 flex items-center gap-2 text-wm-500">
               <span className="text-[18px]" aria-hidden="true">↓</span>
               <span className="font-fmono text-[12px] text-fl-ink bg-wm-100 rounded-full px-2 py-0.5">every caller line forks</span>
             </div>
-            <div className="absolute right-[-64px] left-[55%] top-1/2 h-[2px] bg-wm-500" />
-            <span className="absolute right-[-72px] top-1/2 -translate-y-1/2 text-wm-500 text-[18px]" aria-hidden="true">▶</span>
-            <span className="absolute left-[56%] -top-0.5 font-fmono text-[12px] text-fl-body">text copy → MargaretSGS</span>
+            {/* out: the caller's line goes to MargaretSGS */}
+            <span className="absolute left-[56%] top-[2px] font-fmono text-[12px] text-fl-body">caller line → MargaretSGS</span>
+            <div className="absolute right-[-96px] left-[55%] top-[24px] h-[2px] bg-wm-500" />
+            <span className="absolute right-[-104px] top-[25px] -translate-y-1/2 text-wm-500 text-[16px]" aria-hidden="true">▶</span>
+            {/* back: MargaretSGS coaches Margaret, as text only */}
+            <span className="absolute left-[calc(55%-10px)] top-[45px] -translate-y-1/2 text-fl-deep text-[16px]" aria-hidden="true">◀</span>
+            <div className="absolute right-[-96px] left-[55%] top-[44px] h-[2px] bg-fl-deep border-dashed" />
+            <span className="absolute left-[56%] top-[50px] font-fmono text-[12px] text-fl-deep">← coaching note (text only)</span>
           </div>
           <Node power="llm" title="Margaret replies" line="Plays a confused 78-year-old and stalls for time."
             chips={["Gemini", "StepFun failover", "Pipecat", "coached by MargaretSGS"]} />
@@ -756,6 +960,8 @@ export function Architecture() {
       </div>
 
       <Trace score={score} />
+
+      <Infrastructure />
 
       <div className="grid grid-cols-3 gap-4 mt-5">
         {[["why gemini talks", "Talking needs open-ended language. Deciding needs the same answer every time, fast, and testable."],

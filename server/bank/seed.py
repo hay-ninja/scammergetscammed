@@ -52,14 +52,8 @@ def _ts(days_ago: float) -> str:
     return (datetime.now() - timedelta(days=days_ago)).isoformat(timespec="seconds")
 
 
-def seed() -> None:
-    conn = db.connect()
-    for t in ["customers", "accounts", "transfers", "blocklist", "allowlist", "cases", "audit_log"]:
-        conn.execute(f"DROP TABLE IF EXISTS {t}")
-    db.init(conn)
-    rng = random.Random(13)
-    meta = random.Random(29)  # member metadata, separate so the story's account numbers never shift
-
+def _synthetic_ledger(conn, rng, meta) -> None:
+    """The original generated ledger (~60 members), used only when there's no Nessie snapshot."""
     def customer(name, age, flags=""):
         since = (datetime.now() - timedelta(days=meta.randint(400, 365 * min(40, max(2, age - 20))))).date().isoformat()
         cid = conn.execute("INSERT INTO customers (name, age, risk_flags, member_since) VALUES (?,?,?,?)",
@@ -137,6 +131,25 @@ def seed() -> None:
             name, lo, hi = rng.choice(PAYEES)
             payee = {"routing": rng.choice(list(BANKS)[1:]), "number": str(rng.randint(10**7, 10**8 - 1))}
             transfer(aid, payee, name, round(rng.uniform(lo, hi), 2), "completed", rng.uniform(1, 30))
+
+
+
+def seed() -> None:
+    conn = db.connect()
+    for t in ["customers", "accounts", "transfers", "blocklist", "allowlist", "cases", "audit_log"]:
+        conn.execute(f"DROP TABLE IF EXISTS {t}")
+    db.init(conn)
+    rng = random.Random(13)
+    meta = random.Random(29)  # member metadata, separate so the story's account numbers never shift
+
+    # CalHacks Federal's core banking: members, accounts and payments from Capital One Nessie (server/bank/nessie.py).
+    # Without a Nessie snapshot, fall back to the small generated ledger with the same story.
+    from server.bank import nessie
+    nessie.clear_flags()
+    if not nessie.load_into(conn, BAY_FEDERAL, BANKS[BAY_FEDERAL],
+                            {MULE_1["number"]: "suspected mule", MULE_IRS["number"]: "suspected mule"},
+                            {MULE_1["number"]: 74, MULE_IRS["number"]: 41, HIDDEN_INTERNAL["number"]: 23}):
+        _synthetic_ledger(conn, rng, meta)
 
     # Known-good accounts that must never be blocked.
     for routing, number, name in [("558903361", "10000001", "Coinbase Deposit Account"),

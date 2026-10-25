@@ -2,7 +2,7 @@
 import json
 from datetime import datetime, timedelta
 
-from server.bank import db
+from server.bank import db, nessie
 from server.bank.seed import BANKS, BAY_FEDERAL
 
 
@@ -66,9 +66,11 @@ def block_account(routing: str, number: str, call_id: str) -> dict:
     for v in lookback:
         conn.execute("UPDATE transfers SET status='recall_requested' WHERE id=?", (v["transfer_id"],))
 
-    internal = conn.execute("SELECT id FROM accounts WHERE routing=? AND number=?", (routing, number)).fetchone()
+    internal = conn.execute("SELECT id, nessie_id, nessie_nickname FROM accounts WHERE routing=? AND number=?",
+                            (routing, number)).fetchone()
     if internal:
         conn.execute("UPDATE accounts SET status='held_review' WHERE id=?", (internal["id"],))
+        nessie.flag_account(internal["nessie_id"], internal["nessie_nickname"], "HELD_REVIEW")
     conn.commit()
     conn.close()
 
@@ -99,6 +101,9 @@ def approve_freeze(analyst: str = "analyst") -> list[dict]:
                            (r["routing"], r["number"]))
         if cur.rowcount:
             frozen.append({"routing": r["routing"], "number": r["number"]})
+            a = conn.execute("SELECT nessie_id, nessie_nickname FROM accounts WHERE routing=? AND number=?",
+                             (r["routing"], r["number"])).fetchone()
+            nessie.flag_account(a["nessie_id"], a["nessie_nickname"], "FROZEN")
     conn.commit()
     conn.close()
     audit(analyst, "freeze_approved", {"confirmed": [dict(r) for r in prov], "frozen": frozen})
@@ -116,6 +121,7 @@ def ledger_snapshot() -> dict:
     conn.close()
     return {
         "customers": counts,
+        "source": nessie.snapshot_info() or {"source": "generated demo ledger"},
         "watch": [{"transfer_id": r[0], "amount": r[1], "status": r[2], "memo": r[3],
                    "to": f"{bank_name(r[4])} ••{r[5][-4:]}", "customer": r[6], "age": r[7]} for r in flagged],
         "our_routing": BAY_FEDERAL,

@@ -1,0 +1,215 @@
+{
+ "name": "Real phone call 04:27: routing misheard as 572109087 (bad checksum), both numbers read back in one breath",
+ "turns": [
+  {
+   "speaker": "margaret",
+   "text": "Hello? Is this about my computer?",
+   "t": 0.1
+  },
+  {
+   "speaker": "caller",
+   "text": " Mrs. Wilson?",
+   "t": 5.8
+  },
+  {
+   "speaker": "caller",
+   "text": " This is Agent Daniel Miller with the Federal Reserve.",
+   "t": 8.9
+  },
+  {
+   "speaker": "caller",
+   "text": " Your accounts were compromised by hackers overseas.",
+   "t": 11.8
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear. What should I do now?",
+   "t": 13.2
+  },
+  {
+   "speaker": "caller",
+   "text": " You're going to have to act today or you're going to lose everything.",
+   "t": 20.1
+  },
+  {
+   "speaker": "caller",
+   "text": " And do not tell your bank.",
+   "t": 21.6
+  },
+  {
+   "speaker": "caller",
+   "text": " The employees are involved.",
+   "t": 23.5
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh my. What do I need to do to keep my savings safe?",
+   "t": 24.8
+  },
+  {
+   "speaker": "caller",
+   "text": " So we actually opened up.",
+   "t": 32.7
+  },
+  {
+   "speaker": "caller",
+   "text": " protective Federal Reserve account just for you.",
+   "t": 36.0
+  },
+  {
+   "speaker": "caller",
+   "text": " so that you can wire your savings into a safe account because everything is going to be stolen if you don't do that.",
+   "t": 40.8
+  },
+  {
+   "speaker": "margaret",
+   "text": "I have my pen ready now. Could you please read the account number for me?",
+   "t": 45.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Of course.",
+   "t": 52.2
+  },
+  {
+   "speaker": "caller",
+   "text": " 572-109-087.",
+   "t": 56.1
+  },
+  {
+   "speaker": "margaret",
+   "text": "Got it.",
+   "t": 58.1
+  },
+  {
+   "speaker": "caller",
+   "text": " and 4410-",
+   "t": 62.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Uh-huh.",
+   "t": 66.0
+  },
+  {
+   "speaker": "caller",
+   "text": " Q287.",
+   "t": 70.5
+  },
+  {
+   "speaker": "margaret",
+   "text": "Alright.",
+   "t": 71.8
+  },
+  {
+   "speaker": "caller",
+   "text": " Did you get that?",
+   "t": 76.2
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me read that back to make sure I wrote it down right. Five seven two one zero nine zero eight seven four four one zero q two eight seven. Is that correct?",
+   "t": 78.1
+  },
+  {
+   "speaker": "caller",
+   "text": " The last four numbers are...",
+   "t": 94.7
+  },
+  {
+   "speaker": "caller",
+   "text": " 2287.",
+   "t": 96.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Let me read it again then. Five seven two one zero nine zero eight seven four four one zero two two eight seven. Is that right?",
+   "t": 98.3
+  },
+  {
+   "speaker": "caller",
+   "text": " That is right.",
+   "t": 112.3
+  },
+  {
+   "speaker": "margaret",
+   "text": "My computer is running rather slow today, so this might take just a moment.",
+   "t": 114.1
+  },
+  {
+   "speaker": "caller",
+   "text": " All right.",
+   "t": 121.9
+  },
+  {
+   "speaker": "caller",
+   "text": " Let me know when you have transferred the funds.",
+   "t": 124.5
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh dear, my glasses seem to have slipped off, let me put them back on so I can see the screen.",
+   "t": 125.6
+  },
+  {
+   "speaker": "caller",
+   "text": " Okay.",
+   "t": 138.8
+  },
+  {
+   "speaker": "margaret",
+   "text": "The bank app is loading very slowly now.",
+   "t": 140.2
+  },
+  {
+   "speaker": "caller",
+   "text": " Okay.",
+   "t": 146.4
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh, it says there is an update to install before I can do anything.",
+   "t": 147.2
+  },
+  {
+   "speaker": "caller",
+   "text": " If you don't move the money right now, you're going to lose everything.",
+   "t": 156.7
+  },
+  {
+   "speaker": "margaret",
+   "text": "I am trying my best, but this little circle on the screen just keeps spinning round and round.",
+   "t": 158.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Transfer the funds right now.",
+   "t": 165.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Oh, the screen went completely black.",
+   "t": 167.4
+  },
+  {
+   "speaker": "caller",
+   "text": " Thank you, Bill.",
+   "t": 181.4
+  },
+  {
+   "speaker": "margaret",
+   "text": "Biscuit just jumped up on my lap.",
+   "t": 183.0
+  },
+  {
+   "speaker": "caller",
+   "text": " Thank you. Goodbye.",
+   "t": 188.9
+  },
+  {
+   "speaker": "margaret",
+   "text": "Thank you so much for your help today. Give my best to your mother, and goodbye.",
+   "t": 190.2
+  }
+ ]
+}
