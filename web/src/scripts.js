@@ -33,7 +33,7 @@ export const SCRIPTS = [
       "\"We opened a protected Federal Reserve account for you. Wire your savings there today.\"",
     ],
     accounts: [
-      { label: "Routing", value: "5 7 2 – 1 0 9 – 0 8 6" }, { label: "Account", value: "4 4 1 0 – 2 2 8 7" },
+      { label: "Routing", value: "5 7 2 – 1 0 9 – 0 8 6" }, { label: "Account", value: "4 4 1 0 – 8 2 5 7" },
       { label: "Backup routing", value: "5 5 1 – 2 0 4 – 7 1 1" }, { label: "Backup account", value: "7 7 3 0 – 5 1 9 6" },
     ],
     expect: "Both accounts blocked. Dorothy's pending $8,500 wire is held, two past victims go to recall, and the account at CalHacks Federal waits for an analyst to approve the freeze.",

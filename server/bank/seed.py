@@ -18,7 +18,7 @@ BANKS = {
 }
 
 # The two "safe accounts" on the judge's script card.
-MULE_1 = {"routing": BAY_FEDERAL, "number": "44102287"}  # held at our bank
+MULE_1 = {"routing": BAY_FEDERAL, "number": "44108257"}  # held at our bank
 MULE_2 = {"routing": "551204711", "number": "77305196"}  # held at another bank
 # One "safe account" per extra judge script (demo/scripts), each with its own victims.
 MULE_BANK_IMPOSTOR = {"routing": "558903361", "number": "63018842"}

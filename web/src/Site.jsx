@@ -361,7 +361,7 @@ const HIRE_STEPS = [
       <MockCard>
         <Micro dot="bg-wm-500">audit log</Micro>
         <div className="mt-3 font-fmono text-[12px]">
-          {[["14:02:11", "gate.pass", "margaretsgs v3 · 0.97"], ["14:02:11", "blocklist.add", "572109086 / 44102287"], ["14:02:12", "wire.hold", "$8,500"], ["14:02:12", "recall.request", "$41,000"], ["14:02:13", "sar.draft", "case 1042"]].map(([a, b, c]) => (
+          {[["14:02:11", "gate.pass", "margaretsgs v3 · 0.97"], ["14:02:11", "blocklist.add", "572109086 / 44108257"], ["14:02:12", "wire.hold", "$8,500"], ["14:02:12", "recall.request", "$41,000"], ["14:02:13", "sar.draft", "case 1042"]].map(([a, b, c]) => (
             <div key={b} className="grid grid-cols-[70px_110px_1fr] gap-2 py-2 border-t border-fl-soft"><span className="text-fl-mute">{a}</span><span className="text-wm-700">{b}</span><span className="text-fl-body truncate">{c}</span></div>
           ))}
         </div>
@@ -371,7 +371,7 @@ const HIRE_STEPS = [
     mock: (
       <MockCard>
         <Micro dot="bg-wm-500">awaiting analyst</Micro>
-        <div className="text-[22px] font-medium tracking-title mt-3">Freeze account ••2287?</div>
+        <div className="text-[22px] font-medium tracking-title mt-3">Freeze account ••8257?</div>
         <p className="text-[13.5px] text-fl-body mt-1">Hold is already in place. Freezing needs your approval.</p>
         <div className="flex items-center gap-3 mt-4"><span className="fl-btn px-4 py-1.5 text-[13px]">Approve freeze</span><span className="rounded-full border border-fl-line px-4 py-1.5 text-[13px]">Reject</span></div>
       </MockCard>
@@ -400,7 +400,7 @@ const HIRE_STEPS = [
       <MockCard>
         <div className="flex items-center justify-between"><Micro dot="bg-wm-500">payment screening</Micro><span className="font-fmono text-[11px] text-fl-mute">+7 days</span></div>
         <div className="text-[24px] font-medium tracking-title mt-3">Wire held: matches blocklist.</div>
-        <div className="mt-3"><Row k="Beneficiary" v="572109086 / 44102287" /><Row k="Member" v="different member" /><Row k="Cites" v="original case" tone="text-wm-600" /></div>
+        <div className="mt-3"><Row k="Beneficiary" v="572109086 / 44108257" /><Row k="Member" v="different member" /><Row k="Cites" v="original case" tone="text-wm-600" /></div>
       </MockCard>
     ) },
 ];
@@ -999,14 +999,14 @@ POST /api/v1/calls/a1b2c3d4/lines
           <Head n="02 · webhook" t="Get blocks pushed to you" />
           <pre className={`${code} mt-3`}>{`POST {your WEBHOOK_URL}
 {"event": "mule_account.blocked", "call_id": "a1b2c3d4",
- "accounts": [{"routing": "572109086", "number": "44102287",
+ "accounts": [{"routing": "572109086", "number": "44108257",
                "gate": {"pressure_stages": true, ...}}],
  "holds": [...], "lookback": [...], "protected_total": 49500}`}</pre>
         </Card>
         <Card className="p-6">
           <Head n="03 · screen" t="Screen payments against the feed" />
           <pre className={`${code} mt-3`}>{`GET /api/v1/blocklist
-→ {"accounts": [{"routing": "572109086", "number": "44102287",
+→ {"accounts": [{"routing": "572109086", "number": "44108257",
                  "status": "provisional", "bank": "CalHacks Federal Credit Union"}]}`}</pre>
         </Card>
         <Card className="p-6">
